@@ -1,6 +1,18 @@
 # Agent Instructions
 
-Add project-specific agent instructions here.
+## Project: Kaggle 5-Day Vibe Coding
+
+This repo is the working folder for the Kaggle "5 Days of Vibe Coding" challenge.
+
+Goal: ship working ML/data-science notebooks and submissions across the 5-day program, with each day's work documented and reproducible.
+
+Rules:
+- Each day = one story packet (US-day-N) with a clear deliverable: notebook, submission, or experiment.
+- Keep notebooks runnable end-to-end; no orphaned cells or hardcoded local paths.
+- Pin dataset versions and record Kaggle competition/dataset slugs in story packets.
+- Every claimed score/metric must trace to a real submission, CV output, or notebook run — no invented numbers.
+- Prefer reproducible Python over manual UI steps; record exact commands.
+- Working artifact > description of one. Run code before claiming results.
 
 <!-- HARNESS:BEGIN -->
 ## Harness
