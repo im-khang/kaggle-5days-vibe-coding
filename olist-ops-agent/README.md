@@ -15,22 +15,41 @@ This agent gives natural-language answers with tool-backed BigQuery evidence.
 - Data store: BigQuery dataset `<YOUR_GCP_PROJECT>.olist_ecommerce` in `US`
 - Entrypoint: `olist_ops/agent.py`, exposing `root_agent`
 - Auth: Vertex AI / Application Default Credentials (`GOOGLE_GENAI_USE_VERTEXAI=1`)
+- Pattern: **AgentTool** (agents-as-tools) — CSCO calls department heads and synthesizes
+- Workflow: **SequentialAgent + ParallelAgent** for executive briefing pipeline
 
-Agent team:
+### Agent Team (5 departments, 21 agents total)
 
-| Agent | Purpose | Main data |
-|---|---|---|
-| `OlistOrchestrator` | Routes each question to one specialist | ADK `sub_agents` |
-| `OrdersAgent` | Order status, delivery timing, late vs estimate | `orders_enriched` |
-| `CarriersAgent` | State-lane delivery performance | `carrier_kpis` |
-| `SellersAgent` | Seller fulfillment + CSAT KPIs | `seller_kpis` |
-| `ReviewsAgent` | Review score vs delivery delay + low-score comments | `review_kpis`, `order_reviews` |
-| `ReturnsAgent` | Canceled/unavailable order-rate proxy | `orders`, `customers` |
-| `PaymentsAgent` | Payment mix and installment behavior | `order_payments` |
-| `GeoAgent` | Seller-state to customer-state lanes | `orders`, `items`, `sellers`, `customers` |
-| `DataAnalystAgent` | Schema, table listing, safe ad-hoc SQL | all allowed tables/views |
+```
+ChiefSupplyChainOfficer (CSCO)
+├── 📦 HeadOfFulfillment
+│     ├── OrdersAgent            delivery timing, lifecycle
+│     ├── LaneAgent              customer-state lane (carrier proxy)
+│     └── GeoRoutingAgent        seller→customer pairs, freight by lane
+├── 🤝 HeadOfSellerOps
+│     ├── SellerPerformanceAgent per-seller KPIs, freight by seller state
+│     └── SellerRiskAgent        risk scoring, intervention recommendations
+├── 💬 HeadOfCX
+│     ├── ReviewsAgent           CSAT by delay bucket
+│     ├── ComplaintsAgent        low-score comments, customer impact
+│     └── ReturnsAgent           cancellation/unavailable proxy
+├── 💰 HeadOfFinance
+│     └── PaymentsAgent          payment mix, installments
+├── 📊 HeadOfBI
+│     └── DataAnalystAgent       ad-hoc SQL, schema, cross-table joins
+└── 📋 ExecutiveBriefingPipeline (SequentialAgent)
+      ├── ParallelAgent[FulfillmentKPI, SellerKPI, CXKPI]
+      └── SynthesisAgent → reads state keys → exec summary
+```
 
-Important honesty note: Olist has no `carrier_id`. `CarriersAgent` uses `customer_state` lane performance as a carrier-style proxy and must disclose this in answers.
+Key design: the CSCO uses `AgentTool` (not `sub_agents`), so it can call
+multiple departments one-by-one and synthesize cross-domain answers. The old
+transfer pattern handed control to ONE specialist and ended the turn.
+
+Important caveats disclosed in answers:
+- No `carrier_id`: lane performance uses `customer_state` as proxy.
+- No returns table: `canceled` + `unavailable` order status is the proxy.
+- No inventory/warehouse data: Olist is a marketplace (sellers ship direct).
 
 ## Data
 
@@ -109,10 +128,17 @@ uv run adk web --port 8001 .
 
 Open the ADK web UI, select `olist_ops`, and ask examples:
 
+Single-domain:
 - `Which state has the worst on-time delivery?`
 - `Do late deliveries get worse reviews?`
-- `Show me the schema of the orders table.`
 - `Installment distribution for credit card payments.`
+
+Cross-domain (CSCO calls multiple departments and synthesizes):
+- `Which state has both the worst on-time delivery AND highest cancellation rate?`
+- `Compare the 5 worst on-time sellers (min 50 orders) vs the 5 best. What is the review-score gap?`
+
+Executive briefing (full Sequential + Parallel pipeline):
+- `Give me a full executive summary of our supply chain health.`
 
 ## Eval
 

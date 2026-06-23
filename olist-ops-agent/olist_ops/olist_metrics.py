@@ -38,6 +38,13 @@ TOOL_REFS = {
     "get_payment_mix",
     "get_installment_stats",
     "get_state_pairs",
+    # Department-head AgentTools (CSCO calls these in the departmental architecture)
+    "headoffulfillment",
+    "headofsellerops",
+    "headofcx",
+    "headoffinance",
+    "headofbi",
+    "executivebriefingpipeline",
 }
 
 INTENT_MARKERS = {
@@ -98,6 +105,17 @@ def tool_use_quality(eval_metric: EvalMetric, actual_invocations, expected_invoc
     for invocation in actual_invocations:
         combined = (_response_text(invocation) + " " + _tool_text(invocation)).lower()
         ok = any(marker in combined for marker in TABLE_REFS | TOOL_REFS)
+        # Out-of-scope refusal: no tool call needed; valid trajectory if it
+        # explicitly declines and mentions the agent's actual scope.
+        if not ok:
+            calls = get_all_tool_calls(invocation.intermediate_data)
+            response = _response_text(invocation).lower()
+            refusal = any(
+                phrase in response
+                for phrase in ("only answer", "out of scope", "outside", "i cannot", "olist", "supply chain")
+            )
+            if not calls and refusal:
+                ok = True
         results.append(_result(invocation, 1.0 if ok else 0.0))
     return _overall(results)
 

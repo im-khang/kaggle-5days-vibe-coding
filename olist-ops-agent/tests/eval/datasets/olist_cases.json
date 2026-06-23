@@ -470,6 +470,201 @@
       "creationTimestamp": 0.0,
       "rubrics": null,
       "finalSessionState": {}
+    },
+    {
+      "evalId": "cross_seller_review_gap",
+      "conversation": [
+        {
+          "invocationId": "",
+          "userContent": {
+            "parts": [
+              {
+                "mediaResolution": null,
+                "codeExecutionResult": null,
+                "executableCode": null,
+                "fileData": null,
+                "functionCall": null,
+                "functionResponse": null,
+                "inlineData": null,
+                "text": "Compare the 5 worst on-time sellers (min 50 orders) vs the 5 best. What is the gap in average review scores?",
+                "thought": null,
+                "thoughtSignature": null,
+                "videoMetadata": null,
+                "toolCall": null,
+                "toolResponse": null,
+                "partMetadata": null
+              }
+            ],
+            "role": "user"
+          },
+          "finalResponse": null,
+          "intermediateData": null,
+          "creationTimestamp": 0.0,
+          "rubrics": null,
+          "appDetails": null
+        }
+      ],
+      "conversationScenario": null,
+      "sessionInput": null,
+      "creationTimestamp": 0.0,
+      "rubrics": null,
+      "finalSessionState": {}
+    },
+    {
+      "evalId": "cross_state_delivery_cancel",
+      "conversation": [
+        {
+          "invocationId": "",
+          "userContent": {
+            "parts": [
+              {
+                "mediaResolution": null,
+                "codeExecutionResult": null,
+                "executableCode": null,
+                "fileData": null,
+                "functionCall": null,
+                "functionResponse": null,
+                "inlineData": null,
+                "text": "Which state has both the worst on-time delivery AND highest cancellation rate?",
+                "thought": null,
+                "thoughtSignature": null,
+                "videoMetadata": null,
+                "toolCall": null,
+                "toolResponse": null,
+                "partMetadata": null
+              }
+            ],
+            "role": "user"
+          },
+          "finalResponse": null,
+          "intermediateData": null,
+          "creationTimestamp": 0.0,
+          "rubrics": null,
+          "appDetails": null
+        }
+      ],
+      "conversationScenario": null,
+      "sessionInput": null,
+      "creationTimestamp": 0.0,
+      "rubrics": null,
+      "finalSessionState": {}
+    },
+    {
+      "evalId": "lane_by_freight",
+      "conversation": [
+        {
+          "invocationId": "",
+          "userContent": {
+            "parts": [
+              {
+                "mediaResolution": null,
+                "codeExecutionResult": null,
+                "executableCode": null,
+                "fileData": null,
+                "functionCall": null,
+                "functionResponse": null,
+                "inlineData": null,
+                "text": "Top 5 seller-to-customer state lanes by freight cost.",
+                "thought": null,
+                "thoughtSignature": null,
+                "videoMetadata": null,
+                "toolCall": null,
+                "toolResponse": null,
+                "partMetadata": null
+              }
+            ],
+            "role": "user"
+          },
+          "finalResponse": null,
+          "intermediateData": null,
+          "creationTimestamp": 0.0,
+          "rubrics": null,
+          "appDetails": null
+        }
+      ],
+      "conversationScenario": null,
+      "sessionInput": null,
+      "creationTimestamp": 0.0,
+      "rubrics": null,
+      "finalSessionState": {}
+    },
+    {
+      "evalId": "executive_summary",
+      "conversation": [
+        {
+          "invocationId": "",
+          "userContent": {
+            "parts": [
+              {
+                "mediaResolution": null,
+                "codeExecutionResult": null,
+                "executableCode": null,
+                "fileData": null,
+                "functionCall": null,
+                "functionResponse": null,
+                "inlineData": null,
+                "text": "Give me a full executive summary of our supply chain health.",
+                "thought": null,
+                "thoughtSignature": null,
+                "videoMetadata": null,
+                "toolCall": null,
+                "toolResponse": null,
+                "partMetadata": null
+              }
+            ],
+            "role": "user"
+          },
+          "finalResponse": null,
+          "intermediateData": null,
+          "creationTimestamp": 0.0,
+          "rubrics": null,
+          "appDetails": null
+        }
+      ],
+      "conversationScenario": null,
+      "sessionInput": null,
+      "creationTimestamp": 0.0,
+      "rubrics": null,
+      "finalSessionState": {}
+    },
+    {
+      "evalId": "seller_intervention",
+      "conversation": [
+        {
+          "invocationId": "",
+          "userContent": {
+            "parts": [
+              {
+                "mediaResolution": null,
+                "codeExecutionResult": null,
+                "executableCode": null,
+                "fileData": null,
+                "functionCall": null,
+                "functionResponse": null,
+                "inlineData": null,
+                "text": "Which sellers should be flagged for intervention based on poor performance?",
+                "thought": null,
+                "thoughtSignature": null,
+                "videoMetadata": null,
+                "toolCall": null,
+                "toolResponse": null,
+                "partMetadata": null
+              }
+            ],
+            "role": "user"
+          },
+          "finalResponse": null,
+          "intermediateData": null,
+          "creationTimestamp": 0.0,
+          "rubrics": null,
+          "appDetails": null
+        }
+      ],
+      "conversationScenario": null,
+      "sessionInput": null,
+      "creationTimestamp": 0.0,
+      "rubrics": null,
+      "finalSessionState": {}
     }
   ],
   "creation_timestamp": 0.0

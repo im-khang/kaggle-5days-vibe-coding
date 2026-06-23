@@ -14,18 +14,31 @@ Built as a capstone for the [Kaggle 5-Day AI Agents Course](https://www.kaggle.c
 ## Architecture
 
 ```
-┌──────────────────────────────────────────────────────┐
-│               OlistOrchestrator                       │
-│         Routes to ONE specialist per question         │
-├──────────┬───────────┬───────────┬───────────────────┤
-│  Orders  │  Carriers │  Sellers  │     Reviews       │
-├──────────┼───────────┼───────────┼───────────────────┤
-│ Returns  │ Payments  │    Geo    │   DataAnalyst     │
-└──────────┴───────────┴───────────┴───────────────────┘
-                         │
-                    BigQuery
-               olist_ecommerce
-              (9 tables + 4 views)
+ChiefSupplyChainOfficer (CSCO)  ← AgentTool pattern: calls depts, synthesizes
+│
+├── 📦 HeadOfFulfillment
+│     ├── OrdersAgent            delivery timing, lifecycle
+│     ├── LaneAgent              customer-state lane (carrier proxy)
+│     └── GeoRoutingAgent        seller→customer state pairs, freight by lane
+│
+├── 🤝 HeadOfSellerOps
+│     ├── SellerPerformanceAgent KPIs, freight by seller state
+│     └── SellerRiskAgent        risk scoring, intervention recommendations
+│
+├── 💬 HeadOfCX
+│     ├── ReviewsAgent           CSAT by delay bucket
+│     ├── ComplaintsAgent        low-score comments, customer impact
+│     └── ReturnsAgent           cancellation/unavailable proxy
+│
+├── 💰 HeadOfFinance
+│     └── PaymentsAgent          payment mix, installments
+│
+├── 📊 HeadOfBI
+│     └── DataAnalystAgent       ad-hoc SQL, schema, cross-table joins
+│
+└── 📋 ExecutiveBriefingPipeline (SequentialAgent)
+      ├── ParallelAgent: [Fulfillment, Seller, CX] KPI collectors
+      └── SynthesisAgent → executive summary from state keys
 ```
 
 | Layer | Choice |
@@ -34,7 +47,9 @@ Built as a capstone for the [Kaggle 5-Day AI Agents Course](https://www.kaggle.c
 | Model | Gemini 2.5 Flash (Vertex AI) |
 | Data | BigQuery dataset `olist_ecommerce` |
 | Auth | Application Default Credentials |
-| Eval | ADK eval, 12 cases, 4 custom metrics |
+| Pattern | AgentTool (agents-as-tools) for cross-domain synthesis |
+| Workflow | SequentialAgent + ParallelAgent for executive briefing |
+| Eval | ADK eval, 17 cases, 4 custom metrics |
 
 ## Quick Start
 
