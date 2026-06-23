@@ -253,25 +253,49 @@ def get_lane_performance(state: Optional[str] = None) -> dict:
 # SellersAgent tools
 # ---------------------------------------------------------------------------
 
+_SELLER_SORT_COLUMNS = {
+    "orders": "orders",
+    "on_time_pct": "on_time_pct",
+    "avg_delivery_days": "avg_delivery_days",
+    "avg_review_score": "avg_review_score",
+    "avg_freight": "avg_freight",
+}
+
+
 def get_seller_kpis(
     seller_id: Optional[str] = None,
     state: Optional[str] = None,
     limit: int = 20,
+    min_orders: int = 0,
+    sort_by: str = "orders",
+    ascending: bool = False,
 ) -> dict:
-    """Per-seller KPIs from seller_kpis (filter by seller_id and/or state)."""
+    """Per-seller KPIs from seller_kpis.
+
+    Filters: seller_id, state, min_orders (only sellers with at least this many
+    orders — use this for "worst/best N sellers" questions so tiny-volume
+    sellers do not dominate). Sorting: sort_by one of orders, on_time_pct,
+    avg_delivery_days, avg_review_score, avg_freight; ascending=True for
+    "worst on-time" / "lowest" style questions.
+    """
     limit = max(1, min(int(limit or 20), ROW_TRUNCATION_LIMIT))
+    min_orders = max(0, int(min_orders or 0))
+    sort_col = _SELLER_SORT_COLUMNS.get(sort_by, "orders")
+    direction = "ASC" if ascending else "DESC"
     clauses = []
     if seller_id:
         clauses.append(f"seller_id = '{_escape(seller_id)}'")
     if state:
         clauses.append(f"seller_state = '{_escape(state).upper()}'")
+    if min_orders > 0:
+        clauses.append(f"orders >= {min_orders}")
     where = ("WHERE " + " AND ".join(clauses)) if clauses else ""
     sql = f"""
     SELECT seller_id, seller_state, orders, avg_delivery_days,
            on_time_pct, avg_review_score, avg_freight
     FROM `{PROJECT}.{DATASET}.seller_kpis`
     {where}
-    ORDER BY orders DESC
+    ORDER BY {sort_col} {direction}
     LIMIT {limit}
     """
     result = query_bigquery(sql)
@@ -280,6 +304,9 @@ def get_seller_kpis(
         return {
             "filter_seller_id": seller_id,
             "filter_state": state,
+            "min_orders": min_orders,
+            "sort_by": sort_col,
+            "ascending": ascending,
             "sellers": rows,
         }
     avail = query_bigquery(

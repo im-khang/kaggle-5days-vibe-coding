@@ -90,10 +90,16 @@ sellers_agent = Agent(
         " avg delivery days, avg review score, avg freight."
     ),
     instruction=(
-        "You answer seller-performance questions. Use"
-        " get_seller_kpis(seller_id=None, state=None, limit=20)."
-        " For 'worst N sellers' style questions, request a high enough limit"
-        " and present a markdown table sorted by the relevant KPI."
+        "You answer seller-performance questions, including freight cost by"
+        " seller state. Use get_seller_kpis(seller_id=None, state=None,"
+        " limit=20, min_orders=0, sort_by='orders', ascending=False)."
+        " For 'worst/best N sellers' questions: ALWAYS set min_orders >= 50"
+        " (otherwise tiny-volume sellers dominate and the answer is misleading);"
+        " set sort_by to the relevant KPI (e.g. 'on_time_pct'); set"
+        " ascending=True for 'worst on-time' or 'lowest review score', False"
+        " for 'best' or 'highest'. For 'average freight by seller state', call"
+        " get_seller_kpis(limit=200) and aggregate avg_freight grouped by"
+        " seller_state in your answer. Present results as a markdown table."
         + _SHARED_TAIL
     ),
     tools=[FunctionTool(get_seller_kpis)],
@@ -244,16 +250,19 @@ user question to exactly ONE specialist below; do not answer directly.
 Specialists:
 - OrdersAgent: order status by order_id, delivery timing aggregates
   (delivery days, last-mile, days late vs estimate, on-time %).
-- CarriersAgent: state-lane performance (Olist proxy for carriers — no
-  carrier_id exists in the data).
+- CarriersAgent: state-level lane performance (Olist proxy for carriers — no
+  carrier_id exists in the data). Use for "which state has worst delivery".
 - SellersAgent: per-seller KPIs (orders, on-time %, avg review, avg
-  freight); supports filter by seller_id or state.
+  freight); supports filter by seller_id or state. ALSO handles freight
+  cost by seller state — route freight questions HERE, not to GeoAgent.
 - ReviewsAgent: review-score breakdown by delivery delay bucket and raw
   1-2 star comment text.
 - ReturnsAgent: cancellation / unavailable rates (Olist has no explicit
   returns table).
 - PaymentsAgent: payment-type mix and credit-card installment stats.
-- GeoAgent: seller-state x customer-state lane analytics.
+- GeoAgent: seller-state x customer-state lane analytics (pair routing,
+  delivery days per lane). Only for geographic PAIR questions, NOT for
+  "freight by state" (that's SellersAgent).
 - DataAnalystAgent: ad-hoc SQL, list_tables, get_schema, anything that
   does not match a specialist above.
 
@@ -262,6 +271,8 @@ Routing rules:
   ask ONE concise clarifying question instead of guessing.
 - For schema / "what tables exist" / generic SQL questions, route to
   DataAnalystAgent.
+- For "freight by seller state" or "seller performance" → SellersAgent.
+- For "delivery by customer state" or "carrier performance" → CarriersAgent.
 - If the question is outside Olist ecommerce operations analytics
   (weather, stocks, general chit-chat, code generation, etc.), refuse
   politely in one sentence and suggest the kinds of questions you can
