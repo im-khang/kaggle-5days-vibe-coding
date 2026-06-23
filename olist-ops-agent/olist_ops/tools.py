@@ -10,7 +10,7 @@ from typing import Optional
 
 from google.cloud import bigquery
 
-PROJECT = os.getenv("GOOGLE_CLOUD_PROJECT", "gen-lang-client-0891445661")
+PROJECT = os.environ["GOOGLE_CLOUD_PROJECT"]  # must be set in .env
 DATASET = os.getenv("BQ_DATASET_ID", "olist_ecommerce")
 LOCATION = os.getenv("BQ_DATASET_LOCATION", "US")
 
