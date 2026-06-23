@@ -1,55 +1,35 @@
 # 0008 Capstone Direction Gate
 
-Date: 2026-06-15
+Date: 2026-06-19
 
 ## Status
 
-Proposed (decision gate: June 19, 2026 — end of Day 5)
+Accepted
 
 ## Context
 
 This repo builds the capstone for the 5-Day AI Agents Course (Google × Kaggle).
-The capstone direction must be locked at the Day 5 gate (June 19) before the
-build sprint starts, to protect the June 30 submission deadline.
+The capstone direction was locked at the Day 5 gate (June 19, 2026) before the
+build sprint started.
 
-The authoritative decision record lives in the Obsidian vault:
-`02-PROJECTS/Vibe Coding Capstone Kaggle/decisions.md` (D1). This ADR mirrors
-that gate into the harness decision layer so repo and vault stay consistent.
+Three options were evaluated:
+- A: VN 3PL Performance Excel agent (single-table, limited)
+- B: Generic chat agent (no real problem to solve)
+- C: Olist Brazilian E-Commerce multi-table analytics agent
 
 ## Decision
 
-Lock exactly ONE capstone direction at the June 19 gate. Candidates:
+Option C: build the Olist Ecommerce Analytics Agent.
 
-1. AI-assisted weekly ops report agent — reads a KPI table, finds
-   deltas/exceptions, explains drivers, cites source rows, verifier loop checks
-   math. Reuses AI Automation for Operations patterns. High portfolio fit.
-2. Document-to-knowledge agent — ingests PDFs, OCRs figures, structures into a
-   queryable cited knowledge base. Head start: PaddleOCR + extraction pipeline
-   already built. Risk: scope creep on "queryable."
-3. Code-task orchestrator — issue spec → plan → multi-file edit → run tests →
-   self-correct → open PR. Matches the course subject. Hardest to ship in 7 days.
-
-Chosen direction, problem statement, and measurable success metric to be filled
-at the gate. Until then this ADR stays Proposed and the build sprint (US-006)
-does not start.
-
-## Alternatives Considered
-
-1. Start building before the gate. Rejected — risks building the wrong thing and
-   missing the June 30 deadline.
-2. Build all three. Rejected — no path to ship four deliverables for three agents
-   in ~7 days.
+Rationale:
+- Multi-table dataset (9 tables, ~100k orders) models real ops complexity
+- Real lifecycle dates enable delivery timeliness analysis
+- Reviews + CSAT data enables root-cause analytics
+- Public dataset, auth-free (HuggingFace mirror)
+- Proven ADK multi-agent pattern reusable from prior prototype
 
 ## Consequences
 
-Positive:
-- One bounded agent with a real eval loop is shippable by June 30.
-- Repo decision layer stays consistent with vault truth.
-
-Tradeoffs:
-- Locking on June 19 leaves no slack to pivot direction late.
-
-## Follow-Up
-
-- Fill the chosen direction here AND in the vault `decisions.md` D1 on June 19.
-- Then move US-006 (build sprint) to in_progress.
+- Full re-scaffold of repo from prior 3PL prototype
+- 8-day build sprint to deadline (June 30)
+- Mitigated by reusing the proven ADK agent pattern

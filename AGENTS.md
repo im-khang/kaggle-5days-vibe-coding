@@ -1,62 +1,40 @@
 # Agent Instructions
 
-## Project: Kaggle 5-Day AI Agents Capstone (Vibe Coding with Google)
+This repo contains the Olist Ecommerce Analytics Agent — a Google ADK multi-agent team that answers Brazilian e-commerce ops questions over BigQuery.
 
-This repo is the build folder for the capstone of the **5-Day AI Agents:
-Intensive Vibe Coding Course with Google** (Google × Kaggle, free). It is NOT a
-generic ML/data-science notebook competition.
+## What Lives Where
 
-Course dates: June 15–19, 2026. Capstone opens June 19 (end of Day 5).
-**Submission deadline: June 30, 2026.** Completion → Kaggle badge + certificate.
+- `olist-ops-agent/` — the agent application (Python, uv)
+- `docs/` — architecture notes and decision records
+- `AGENTS.md` — this file
+- `README.md` — public-facing project intro
 
-Goal: build and submit ONE working AI agent that solves a real, defined problem
-with a real harness (tools, context, guardrails, evals) — not a toy demo.
+When you make changes, keep these consistent: code, docs, and decisions should not drift.
 
-Required capstone deliverables (all four, on Kaggle):
-1. Working AI agent — actually runs, solves a defined task.
-2. Kaggle writeup — the submission notebook/post.
-3. Video explanation — walkthrough of what it does + how.
-4. Design rationale — architecture, context design, tradeoffs, failures.
-5. Code link — public GitHub repo.
+## Coding Rules
 
-Source of truth = Obsidian vault, not this repo. Before working, read:
-- Project: `02-PROJECTS/Olist Ecommerce Analytics Agent/{overview,tasks,decisions}.md`
-- MOC: `03-NOTES/MOCs/Kaggle AI Agents Course MOC.md`
-- Vault path: `OBSIDIAN_VAULT_PATH` in `~/.hermes/.env`.
-Repo `docs/` (stories, decisions, product) must stay consistent with the vault.
-When they drift, the vault wins; update the repo to match, not the reverse.
+- Keep scripts and notebooks runnable end-to-end. No hardcoded local paths.
+- Read existing code before adding new patterns. Match the project's style.
+- The agent must have an eval/verification loop. Every claimed metric must trace to a real run — no invented numbers.
+- Prefer reproducible Python over manual UI steps. Record exact commands when needed.
+- Working artifact beats a description of one. Run code before claiming results.
+- Do not commit secrets, real project IDs, or local environment files. `.env` is gitignored; use `.env.example` as the template.
 
-Rules:
-- The capstone direction is locked at the **Day 5 gate (June 19)** in the vault
-  `decisions.md` (D1). Do not start the build sprint before that gate is filled.
-- Mirror vault milestones M0–M7 as harness stories; one story per milestone, not
-  one ad-hoc "baseline notebook."
-- Keep notebooks/scripts runnable end-to-end; no orphaned cells or hardcoded
-  local paths.
-- The agent must have an eval/verification loop that catches bad output
-  (Day 4 principle: verification is the differentiator).
-- Every claimed score/metric must trace to a real run — no invented numbers.
-- Prefer reproducible Python over manual UI steps; record exact commands.
-- Working artifact > description of one. Run code before claiming results.
-- Write a receipt to `05-HERMES-OUTPUTS/receipts/` in the vault after material
-  repo changes that affect project truth.
+## Agent Application
 
-<!-- HARNESS:BEGIN -->
-## Harness
+The agent lives in `olist-ops-agent/`:
 
-This repo uses Harness. Before work, read:
+- `olist_ops/agent.py` — `root_agent = OlistOrchestrator` with 8 specialist sub-agents
+- `olist_ops/tools.py` — BigQuery tools (SELECT-only, billing cap, timeout)
+- `tests/eval/` — eval cases + custom metrics
+- `scripts/bigquery_upload.py` — load CSVs into BigQuery + create views
 
-- `README.md`
-- `docs/HARNESS.md`
-- `docs/FEATURE_INTAKE.md`
-- `docs/ARCHITECTURE.md`
-- `docs/CONTEXT_RULES.md`
-- `docs/TOOL_REGISTRY.md`
-- `scripts/bin/harness-cli query matrix` on macOS/Linux, or `.\scripts\bin\harness-cli.exe query matrix` on Windows
+See `olist-ops-agent/README.md` for setup, run, and eval commands.
 
-Use the Rust Harness CLI at `scripts/bin/harness-cli` on macOS/Linux or
-`scripts/bin/harness-cli.exe` on Windows as the main operational tool. Before a
-step that could use an external tool, run `scripts/bin/harness-cli query tools
---capability <name> --status present` to see what is equipped; an absent
-capability is a clean skip.
-<!-- HARNESS:END -->
+## Repository Notes
+
+This repository was scaffolded with a project harness that provides templates for
+architecture notes (`docs/ARCHITECTURE.md`), test/proof matrices
+(`docs/TEST_MATRIX.md`), and decision records (`docs/decisions/`). Those docs are
+informational; the source of truth for the agent's behavior is the code in
+`olist-ops-agent/` and the eval set in `olist-ops-agent/tests/eval/`.
