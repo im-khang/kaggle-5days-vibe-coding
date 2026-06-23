@@ -1,0 +1,20 @@
+# Secrets & local config
+.env
+.env.local
+
+# Dependencies / virtual envs
+.venv/
+.ocr-venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# ADK runtime
+.adk/
+
+# Data — 120MB raw CSVs, download via script/README
+data/*.csv
+data/*.csv.gz
+
+# macOS
+.DS_Store

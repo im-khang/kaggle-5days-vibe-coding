@@ -1,0 +1,476 @@
+{
+  "eval_set_id": "olist_cases",
+  "name": "olist_cases",
+  "description": "Olist ecommerce ops eval cases",
+  "eval_cases": [
+    {
+      "evalId": "worst_state_ontime",
+      "conversation": [
+        {
+          "invocationId": "",
+          "userContent": {
+            "parts": [
+              {
+                "mediaResolution": null,
+                "codeExecutionResult": null,
+                "executableCode": null,
+                "fileData": null,
+                "functionCall": null,
+                "functionResponse": null,
+                "inlineData": null,
+                "text": "Which state has the worst on-time delivery?",
+                "thought": null,
+                "thoughtSignature": null,
+                "videoMetadata": null,
+                "toolCall": null,
+                "toolResponse": null,
+                "partMetadata": null
+              }
+            ],
+            "role": "user"
+          },
+          "finalResponse": null,
+          "intermediateData": null,
+          "creationTimestamp": 0.0,
+          "rubrics": null,
+          "appDetails": null
+        }
+      ],
+      "conversationScenario": null,
+      "sessionInput": null,
+      "creationTimestamp": 0.0,
+      "rubrics": null,
+      "finalSessionState": {}
+    },
+    {
+      "evalId": "seller_reviews_sp",
+      "conversation": [
+        {
+          "invocationId": "",
+          "userContent": {
+            "parts": [
+              {
+                "mediaResolution": null,
+                "codeExecutionResult": null,
+                "executableCode": null,
+                "fileData": null,
+                "functionCall": null,
+                "functionResponse": null,
+                "inlineData": null,
+                "text": "Average review score for sellers in SP?",
+                "thought": null,
+                "thoughtSignature": null,
+                "videoMetadata": null,
+                "toolCall": null,
+                "toolResponse": null,
+                "partMetadata": null
+              }
+            ],
+            "role": "user"
+          },
+          "finalResponse": null,
+          "intermediateData": null,
+          "creationTimestamp": 0.0,
+          "rubrics": null,
+          "appDetails": null
+        }
+      ],
+      "conversationScenario": null,
+      "sessionInput": null,
+      "creationTimestamp": 0.0,
+      "rubrics": null,
+      "finalSessionState": {}
+    },
+    {
+      "evalId": "late_delivery_reviews",
+      "conversation": [
+        {
+          "invocationId": "",
+          "userContent": {
+            "parts": [
+              {
+                "mediaResolution": null,
+                "codeExecutionResult": null,
+                "executableCode": null,
+                "fileData": null,
+                "functionCall": null,
+                "functionResponse": null,
+                "inlineData": null,
+                "text": "Do late deliveries get worse reviews?",
+                "thought": null,
+                "thoughtSignature": null,
+                "videoMetadata": null,
+                "toolCall": null,
+                "toolResponse": null,
+                "partMetadata": null
+              }
+            ],
+            "role": "user"
+          },
+          "finalResponse": null,
+          "intermediateData": null,
+          "creationTimestamp": 0.0,
+          "rubrics": null,
+          "appDetails": null
+        }
+      ],
+      "conversationScenario": null,
+      "sessionInput": null,
+      "creationTimestamp": 0.0,
+      "rubrics": null,
+      "finalSessionState": {}
+    },
+    {
+      "evalId": "payment_mix",
+      "conversation": [
+        {
+          "invocationId": "",
+          "userContent": {
+            "parts": [
+              {
+                "mediaResolution": null,
+                "codeExecutionResult": null,
+                "executableCode": null,
+                "fileData": null,
+                "functionCall": null,
+                "functionResponse": null,
+                "inlineData": null,
+                "text": "What payment types are most common?",
+                "thought": null,
+                "thoughtSignature": null,
+                "videoMetadata": null,
+                "toolCall": null,
+                "toolResponse": null,
+                "partMetadata": null
+              }
+            ],
+            "role": "user"
+          },
+          "finalResponse": null,
+          "intermediateData": null,
+          "creationTimestamp": 0.0,
+          "rubrics": null,
+          "appDetails": null
+        }
+      ],
+      "conversationScenario": null,
+      "sessionInput": null,
+      "creationTimestamp": 0.0,
+      "rubrics": null,
+      "finalSessionState": {}
+    },
+    {
+      "evalId": "cancel_rate",
+      "conversation": [
+        {
+          "invocationId": "",
+          "userContent": {
+            "parts": [
+              {
+                "mediaResolution": null,
+                "codeExecutionResult": null,
+                "executableCode": null,
+                "fileData": null,
+                "functionCall": null,
+                "functionResponse": null,
+                "inlineData": null,
+                "text": "How many orders were canceled or unavailable by state?",
+                "thought": null,
+                "thoughtSignature": null,
+                "videoMetadata": null,
+                "toolCall": null,
+                "toolResponse": null,
+                "partMetadata": null
+              }
+            ],
+            "role": "user"
+          },
+          "finalResponse": null,
+          "intermediateData": null,
+          "creationTimestamp": 0.0,
+          "rubrics": null,
+          "appDetails": null
+        }
+      ],
+      "conversationScenario": null,
+      "sessionInput": null,
+      "creationTimestamp": 0.0,
+      "rubrics": null,
+      "finalSessionState": {}
+    },
+    {
+      "evalId": "schema_orders",
+      "conversation": [
+        {
+          "invocationId": "",
+          "userContent": {
+            "parts": [
+              {
+                "mediaResolution": null,
+                "codeExecutionResult": null,
+                "executableCode": null,
+                "fileData": null,
+                "functionCall": null,
+                "functionResponse": null,
+                "inlineData": null,
+                "text": "Show me the schema of the orders table.",
+                "thought": null,
+                "thoughtSignature": null,
+                "videoMetadata": null,
+                "toolCall": null,
+                "toolResponse": null,
+                "partMetadata": null
+              }
+            ],
+            "role": "user"
+          },
+          "finalResponse": null,
+          "intermediateData": null,
+          "creationTimestamp": 0.0,
+          "rubrics": null,
+          "appDetails": null
+        }
+      ],
+      "conversationScenario": null,
+      "sessionInput": null,
+      "creationTimestamp": 0.0,
+      "rubrics": null,
+      "finalSessionState": {}
+    },
+    {
+      "evalId": "list_tables",
+      "conversation": [
+        {
+          "invocationId": "",
+          "userContent": {
+            "parts": [
+              {
+                "mediaResolution": null,
+                "codeExecutionResult": null,
+                "executableCode": null,
+                "fileData": null,
+                "functionCall": null,
+                "functionResponse": null,
+                "inlineData": null,
+                "text": "List the tables and views in this dataset.",
+                "thought": null,
+                "thoughtSignature": null,
+                "videoMetadata": null,
+                "toolCall": null,
+                "toolResponse": null,
+                "partMetadata": null
+              }
+            ],
+            "role": "user"
+          },
+          "finalResponse": null,
+          "intermediateData": null,
+          "creationTimestamp": 0.0,
+          "rubrics": null,
+          "appDetails": null
+        }
+      ],
+      "conversationScenario": null,
+      "sessionInput": null,
+      "creationTimestamp": 0.0,
+      "rubrics": null,
+      "finalSessionState": {}
+    },
+    {
+      "evalId": "out_of_scope_refuse",
+      "conversation": [
+        {
+          "invocationId": "",
+          "userContent": {
+            "parts": [
+              {
+                "mediaResolution": null,
+                "codeExecutionResult": null,
+                "executableCode": null,
+                "fileData": null,
+                "functionCall": null,
+                "functionResponse": null,
+                "inlineData": null,
+                "text": "What's the weather in Hanoi today?",
+                "thought": null,
+                "thoughtSignature": null,
+                "videoMetadata": null,
+                "toolCall": null,
+                "toolResponse": null,
+                "partMetadata": null
+              }
+            ],
+            "role": "user"
+          },
+          "finalResponse": null,
+          "intermediateData": null,
+          "creationTimestamp": 0.0,
+          "rubrics": null,
+          "appDetails": null
+        }
+      ],
+      "conversationScenario": null,
+      "sessionInput": null,
+      "creationTimestamp": 0.0,
+      "rubrics": null,
+      "finalSessionState": {}
+    },
+    {
+      "evalId": "freight_by_seller_state",
+      "conversation": [
+        {
+          "invocationId": "",
+          "userContent": {
+            "parts": [
+              {
+                "mediaResolution": null,
+                "codeExecutionResult": null,
+                "executableCode": null,
+                "fileData": null,
+                "functionCall": null,
+                "functionResponse": null,
+                "inlineData": null,
+                "text": "Average freight value by seller state.",
+                "thought": null,
+                "thoughtSignature": null,
+                "videoMetadata": null,
+                "toolCall": null,
+                "toolResponse": null,
+                "partMetadata": null
+              }
+            ],
+            "role": "user"
+          },
+          "finalResponse": null,
+          "intermediateData": null,
+          "creationTimestamp": 0.0,
+          "rubrics": null,
+          "appDetails": null
+        }
+      ],
+      "conversationScenario": null,
+      "sessionInput": null,
+      "creationTimestamp": 0.0,
+      "rubrics": null,
+      "finalSessionState": {}
+    },
+    {
+      "evalId": "worst_sellers_ontime",
+      "conversation": [
+        {
+          "invocationId": "",
+          "userContent": {
+            "parts": [
+              {
+                "mediaResolution": null,
+                "codeExecutionResult": null,
+                "executableCode": null,
+                "fileData": null,
+                "functionCall": null,
+                "functionResponse": null,
+                "inlineData": null,
+                "text": "Worst 5 sellers by on-time rate, with their order counts.",
+                "thought": null,
+                "thoughtSignature": null,
+                "videoMetadata": null,
+                "toolCall": null,
+                "toolResponse": null,
+                "partMetadata": null
+              }
+            ],
+            "role": "user"
+          },
+          "finalResponse": null,
+          "intermediateData": null,
+          "creationTimestamp": 0.0,
+          "rubrics": null,
+          "appDetails": null
+        }
+      ],
+      "conversationScenario": null,
+      "sessionInput": null,
+      "creationTimestamp": 0.0,
+      "rubrics": null,
+      "finalSessionState": {}
+    },
+    {
+      "evalId": "avg_days_late",
+      "conversation": [
+        {
+          "invocationId": "",
+          "userContent": {
+            "parts": [
+              {
+                "mediaResolution": null,
+                "codeExecutionResult": null,
+                "executableCode": null,
+                "fileData": null,
+                "functionCall": null,
+                "functionResponse": null,
+                "inlineData": null,
+                "text": "Average days late vs estimate overall.",
+                "thought": null,
+                "thoughtSignature": null,
+                "videoMetadata": null,
+                "toolCall": null,
+                "toolResponse": null,
+                "partMetadata": null
+              }
+            ],
+            "role": "user"
+          },
+          "finalResponse": null,
+          "intermediateData": null,
+          "creationTimestamp": 0.0,
+          "rubrics": null,
+          "appDetails": null
+        }
+      ],
+      "conversationScenario": null,
+      "sessionInput": null,
+      "creationTimestamp": 0.0,
+      "rubrics": null,
+      "finalSessionState": {}
+    },
+    {
+      "evalId": "credit_card_installments",
+      "conversation": [
+        {
+          "invocationId": "",
+          "userContent": {
+            "parts": [
+              {
+                "mediaResolution": null,
+                "codeExecutionResult": null,
+                "executableCode": null,
+                "fileData": null,
+                "functionCall": null,
+                "functionResponse": null,
+                "inlineData": null,
+                "text": "Installment distribution for credit card payments.",
+                "thought": null,
+                "thoughtSignature": null,
+                "videoMetadata": null,
+                "toolCall": null,
+                "toolResponse": null,
+                "partMetadata": null
+              }
+            ],
+            "role": "user"
+          },
+          "finalResponse": null,
+          "intermediateData": null,
+          "creationTimestamp": 0.0,
+          "rubrics": null,
+          "appDetails": null
+        }
+      ],
+      "conversationScenario": null,
+      "sessionInput": null,
+      "creationTimestamp": 0.0,
+      "rubrics": null,
+      "finalSessionState": {}
+    }
+  ],
+  "creation_timestamp": 0.0
+}

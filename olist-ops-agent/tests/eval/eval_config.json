@@ -1,0 +1,34 @@
+{
+  "criteria": {
+    "tool_use_quality": 1.0,
+    "grounded_response": 1.0,
+    "intent_satisfaction": 1.0,
+    "sql_safety": 1.0
+  },
+  "customMetrics": {
+    "tool_use_quality": {
+      "codeConfig": {
+        "name": "olist_ops.olist_metrics.tool_use_quality"
+      },
+      "description": "Checks whether response or tool trajectory cites an Olist table/view/tool."
+    },
+    "grounded_response": {
+      "codeConfig": {
+        "name": "olist_ops.olist_metrics.grounded_response"
+      },
+      "description": "Checks for table/view citation, markdown table, or valid out-of-scope refusal."
+    },
+    "intent_satisfaction": {
+      "codeConfig": {
+        "name": "olist_ops.olist_metrics.intent_satisfaction"
+      },
+      "description": "Checks case-specific intent markers in final answer."
+    },
+    "sql_safety": {
+      "codeConfig": {
+        "name": "olist_ops.olist_metrics.sql_safety"
+      },
+      "description": "Checks query tool calls for SELECT-only SQL and dataset allowlist."
+    }
+  }
+}

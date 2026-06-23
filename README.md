@@ -199,30 +199,34 @@ Kinds (`cli`, `binary`, `mcp`, `skill`, `http`) make it agent-generic: each
 agent runtime uses what it can orchestrate. See `docs/TOOL_REGISTRY.md` for the
 full model, the degrade ladder, and how to wire a tool into a flow step.
 
-## Current State
+## Current Project
 
-This repository is in Harness v0.
+This harness is installed in the build folder for the **Kaggle 5-Day AI Agents
+Capstone** (Vibe Coding with Google). The spec is defined and lives in the
+Obsidian vault, which is the source of truth:
 
-There is no application implementation and no baked-in product specification
-yet. The current work is the reusable project harness: the file structure,
-agent operating model, feature intake process, story templates, and validation
-expectations that help humans and agents turn a future user-provided spec into
-implementation work.
+- Project truth: `02-PROJECTS/Olist Ecommerce Analytics Agent/{overview,tasks,decisions}.md`
+- Course MOC: `03-NOTES/MOCs/Kaggle AI Agents Course MOC.md`
+- Vault path: `OBSIDIAN_VAULT_PATH` in `~/.hermes/.env`
+
+Capstone deadline: **June 30, 2026**. Direction is locked at the Day 5 gate
+(June 19) — see `docs/decisions/0008-capstone-direction-gate.md`. Milestones
+M0–M7 are tracked as stories US-001..US-008 (`harness-cli query matrix`).
+
+See `AGENTS.md` for the project rules. When repo docs and the vault drift, the
+vault wins.
 
 ## Product Sources
 
-No product contract is currently defined.
+The product spec is the capstone brief in the Obsidian vault (see above).
+Repo-side living artifacts derived from it:
 
-When a user provides a project specification, add or reference it as the input
-spec for the first buildout, then derive smaller living artifacts from it:
+- `docs/stories/` + `harness-cli query matrix`: milestones M0–M7 as stories.
+- `docs/decisions/`: durable decisions, incl. 0008 (capstone direction gate).
+- `docs/product/`: product contract files, created if/when the locked
+  direction needs domain contracts.
 
-- `docs/product/`: current product contract files, created from the spec.
-- `docs/stories/`: story packets and backlog created from selected work.
-- `docs/TEST_MATRIX.md`: behavior-to-proof control panel.
-- `docs/decisions/`: durable decisions and tradeoffs.
-
-Do not keep a project-specific spec or product breakdown in this harness until
-a real project supplies one.
+The harness sections below describe the reusable harness tooling itself.
 
 ## Repository Structure
 
