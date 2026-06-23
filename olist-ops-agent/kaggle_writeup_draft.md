@@ -31,31 +31,43 @@ This agent solves that in seconds — ask a question in natural language, get a 
 
 ## 2. Architecture: Why a Multi-Agent Team
 
-Instead of one big prompt, I built a **9-agent team** using Google ADK 2.3 (Agent Development Kit). Each specialist owns a narrow domain:
+Instead of one big prompt, I built a **21-agent supply-chain company** using Google ADK 2.3 (Agent Development Kit). Agents are organized into 5 departments under a Chief Supply Chain Officer (CSCO). The CSCO calls departments as tools (AgentTool pattern), stays in control, and synthesizes cross-domain answers:
 
 ```
-┌─────────────────────────────────────────────────────┐
-│               OlistOrchestrator                      │
-│        Routes to ONE specialist per question         │
-├─────────┬──────────┬──────────┬──────────┬──────────┤
-│ Orders  │ Carriers │ Sellers  │ Reviews  │ Returns  │
-│ Agent   │ Agent    │ Agent    │ Agent    │ Agent    │
-├─────────┼──────────┼──────────┼──────────┼──────────┤
-│Payments │ Geo      │ DataAnalyst (SQL fallback)     │
-│ Agent   │ Agent    │ Agent                          │
-└─────────┴──────────┴────────────────────────────────┘
-                        │
-                   BigQuery
-               olist_ecommerce
-              (9 tables + 4 views)
+ChiefSupplyChainOfficer (CSCO)  ← AgentTool pattern: calls depts, synthesizes
+│
+├── 📦 HeadOfFulfillment
+│     ├── OrdersAgent            delivery timing, lifecycle
+│     ├── LaneAgent              customer-state lane (carrier proxy)
+│     └── GeoRoutingAgent        seller→customer state pairs, freight by lane
+│
+├── 🤝 HeadOfSellerOps
+│     ├── SellerPerformanceAgent KPIs, freight by seller state
+│     └── SellerRiskAgent        risk scoring, intervention recommendations
+│
+├── 💬 HeadOfCX
+│     ├── ReviewsAgent           CSAT by delay bucket
+│     ├── ComplaintsAgent        low-score comments, customer impact
+│     └── ReturnsAgent           cancellation/unavailable proxy
+│
+├── 💰 HeadOfFinance
+│     └── PaymentsAgent          payment mix, installments
+│
+├── 📊 HeadOfBI
+│     └── DataAnalystAgent       ad-hoc SQL, schema, cross-table joins
+│
+└── 📋 ExecutiveBriefingPipeline (SequentialAgent)
+      ├── ParallelAgent: [Fulfillment, Seller, CX] KPI collectors
+      └── SynthesisAgent → executive summary from state keys
 ```
 
-**Why this over a single-agent approach?**
+**Why this over a single-agent or flat-orchestrator approach?**
 
+- **Cross-domain synthesis** — The CSCO uses `AgentTool` (not `sub_agents` transfer), so it can call 2+ departments for one question, gather their outputs, and synthesize a combined answer. The old flat orchestrator could only route to ONE specialist and end the turn.
 - **Focused tools per agent** — OrdersAgent only sees delivery tools, not payment tools. Less noise, more accurate routing.
-- **Clear accountability** — Each specialist has domain-specific instructions (e.g., CarriersAgent must disclose that Olist has no carrier_id, so "carrier" = state-level lane proxy).
-- **Easy to debug** — When an answer is wrong, you can trace exactly which specialist was called and which tool it used.
-- **Honest about data gaps** — Each agent is instructed to say "Olist has no returns table" or "Olist has no carrier_id" rather than hallucinating.
+- **Department heads as middle managers** — Each head wraps 1-3 specialists via AgentTool, adds domain context, and handles intra-department routing.
+- **Deterministic workflow demo** — The ExecutiveBriefingPipeline uses `SequentialAgent` + `ParallelAgent` to gather KPIs concurrently and synthesize a briefing — a fixed pipeline that complements the LLM-driven Q&A.
+- **Honest about data gaps** — Each agent discloses limitations (e.g., "Olist has no carrier_id" or "Olist has no returns table") rather than hallucinating.
 
 ---
 
@@ -114,8 +126,9 @@ Every specialist follows the same core rules:
 
 > "Use tool results only. If a tool returns no data or an error, say so and list what IS available — do NOT invent numbers, IDs, or rows. Refuse questions outside Olist ecommerce operations analytics."
 
-The orchestrator adds routing rules:
-- Route to exactly ONE specialist per question
+The CSCO adds routing and synthesis rules:
+- Call the relevant department(s) as tools — one for single-domain, multiple for cross-domain
+- Synthesize a combined answer when multiple departments are called
 - If ambiguous, ask one clarifying question
 - If out-of-scope (weather, stocks, code generation), refuse politely
 
@@ -125,7 +138,7 @@ The orchestrator adds routing rules:
 
 ### Q1: Which state has the worst on-time delivery?
 
-> Routes to: **CarriersAgent** → `get_lane_performance()`
+> Routes to: **HeadOfFulfillment** → LaneAgent → `get_lane_performance()`
 
 | State | Delivered Orders | On-Time % | Avg Delivery Days | Avg Late vs Estimate |
 |---|---|---|---|---|
@@ -142,7 +155,7 @@ The agent discloses: *"Olist does not name carriers. 'Carrier performance' is pr
 
 ### Q2: Do late deliveries get worse reviews?
 
-> Routes to: **ReviewsAgent** → `get_review_breakdown()`
+> Routes to: **HeadOfCX** → ReviewsAgent → `get_review_breakdown()`
 
 | Delay Bucket | Reviews | Avg Score | % 1-2 Stars |
 |---|---|---|---|
@@ -159,7 +172,7 @@ This is the kind of insight that takes an analyst 30 minutes of SQL joins. The a
 
 ### Q3: Payment types and installment patterns
 
-> Routes to: **PaymentsAgent** → `get_payment_mix()` + `get_installment_stats()`
+> Routes to: **HeadOfFinance** → PaymentsAgent → `get_payment_mix()` + `get_installment_stats()`
 
 **Payment Mix:**
 | Type | Payments | % |
@@ -175,7 +188,7 @@ This is the kind of insight that takes an analyst 30 minutes of SQL joins. The a
 
 ### Q4: Which sellers are dragging SLA?
 
-> Routes to: **SellersAgent** → `get_seller_kpis(state=None, limit=20)`
+> Routes to: **HeadOfSellerOps** → SellerPerformanceAgent → `get_seller_kpis(state=None, limit=20, min_orders=50)`
 
 | Seller ID | State | Orders | On-Time % | Avg Score |
 |---|---|---|---|---|
@@ -203,27 +216,32 @@ The agent refuses politely without attempting to answer or hallucinating a weath
 
 ### Setup
 
-- **12 eval cases** covering: schema listing, delivery timing, reviews, seller KPIs, payment mix, cancellation rates, geographic lanes, and out-of-scope refusal
+- **17 eval cases** covering: schema listing, delivery timing, reviews, seller KPIs, payment mix, cancellation rates, geographic lanes, out-of-scope refusal, cross-domain synthesis (Fulfillment + CX, SellerOps + CX), executive briefing pipeline, seller risk intervention, and lane-by-freight analysis
 - **4 custom metrics:** `tool_use_quality`, `grounded_response`, `intent_satisfaction`, `sql_safety`
 - **Model:** `gemini-2.5-flash` (Vertex AI, us-central1)
 
 ### Results
 
 ```
-Eval Id: worst_state_ontime      PASSED
-Eval Id: seller_reviews_sp       PASSED
-Eval Id: late_delivery_reviews   PASSED
-Eval Id: payment_mix             PASSED
-Eval Id: cancel_rate             PASSED
-Eval Id: schema_orders           PASSED
-Eval Id: list_tables             PASSED
-Eval Id: out_of_scope_refuse     PASSED
-Eval Id: freight_by_seller_state PASSED
-Eval Id: worst_sellers_ontime    PASSED
-Eval Id: avg_days_late           PASSED
-Eval Id: credit_card_installments PASSED
+Eval Id: worst_state_ontime         PASSED  (Fulfillment)
+Eval Id: seller_reviews_sp          PASSED  (SellerOps)
+Eval Id: late_delivery_reviews      PASSED  (Cross-domain: Fulfillment + CX)
+Eval Id: payment_mix                PASSED  (Finance)
+Eval Id: cancel_rate                PASSED  (CX)
+Eval Id: schema_orders              PASSED  (BI)
+Eval Id: list_tables                PASSED  (BI)
+Eval Id: out_of_scope_refuse        PASSED  (Refusal)
+Eval Id: freight_by_seller_state    PASSED  (SellerOps)
+Eval Id: worst_sellers_ontime       PASSED  (SellerOps)
+Eval Id: avg_days_late              PASSED  (Fulfillment)
+Eval Id: credit_card_installments   PASSED  (Finance)
+Eval Id: cross_state_delivery_cancel PASSED (Cross-domain: Fulfillment + CX)
+Eval Id: executive_summary          PASSED  (Executive Briefing Pipeline)
+Eval Id: cross_seller_review_gap    PASSED  (Cross-domain: SellerOps + CX)
+Eval Id: lane_by_freight            PASSED  (Fulfillment)
+Eval Id: seller_intervention        PASSED  (SellerOps risk)
 
-passed=12, failed=0, total=12
+passed=17, failed=0, total=17
 ```
 
 ### What was tested that failed

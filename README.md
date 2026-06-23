@@ -7,7 +7,8 @@ Built as a capstone for the [Kaggle 5-Day AI Agents Course](https://www.kaggle.c
 ## What It Does
 
 - Answers ops questions about orders, delivery, sellers, reviews, payments, and geography
-- Routes each question to the right specialist agent (9-agent team)
+- 21-agent team in 5 supply-chain departments (AgentTool pattern for cross-domain synthesis)
+- Routes single-domain Q to one specialist; cross-domain Q calls multiple departments and synthesizes
 - Returns cited, SQL-backed answers — no hallucinated numbers
 - Enforces SELECT-only safety: no writes, 10 GB cap, 30s timeout
 
@@ -82,24 +83,27 @@ uv run adk web --port 8001 .
 
 ## Eval Results
 
-12/12 cases passing:
+17/17 cases passing (4 custom metrics: `tool_use_quality`, `grounded_response`, `intent_satisfaction`, `sql_safety`):
 
-| Case | Status |
-|---|---|
-| worst_state_ontime | ✅ |
-| seller_reviews_sp | ✅ |
-| late_delivery_reviews | ✅ |
-| payment_mix | ✅ |
-| cancel_rate | ✅ |
-| schema_orders | ✅ |
-| list_tables | ✅ |
-| out_of_scope_refuse | ✅ |
-| freight_by_seller_state | ✅ |
-| worst_sellers_ontime | ✅ |
-| avg_days_late | ✅ |
-| credit_card_installments | ✅ |
-
-Custom metrics: `tool_use_quality`, `grounded_response`, `intent_satisfaction`, `sql_safety`
+| Case | Domain | Status |
+|---|---|---|
+| worst_state_ontime | Fulfillment | ✅ |
+| seller_reviews_sp | SellerOps | ✅ |
+| late_delivery_reviews | Cross-domain (Fulfillment + CX) | ✅ |
+| payment_mix | Finance | ✅ |
+| cancel_rate | CX | ✅ |
+| schema_orders | BI | ✅ |
+| list_tables | BI | ✅ |
+| out_of_scope_refuse | Refusal | ✅ |
+| freight_by_seller_state | SellerOps | ✅ |
+| worst_sellers_ontime | SellerOps | ✅ |
+| avg_days_late | Fulfillment | ✅ |
+| credit_card_installments | Finance | ✅ |
+| cross_state_delivery_cancel | Cross-domain (Fulfillment + CX) | ✅ |
+| executive_summary | Executive Briefing Pipeline | ✅ |
+| cross_seller_review_gap | Cross-domain (SellerOps + CX) | ✅ |
+| lane_by_freight | Fulfillment | ✅ |
+| seller_intervention | SellerOps (risk) | ✅ |
 
 Run eval yourself:
 
@@ -114,7 +118,8 @@ uv run adk eval olist_ops tests/eval/datasets/olist_cases.json \
 ```
 olist-ops-agent/           # The agent application
   olist_ops/
-    agent.py               # OlistOrchestrator + 8 specialists
+    agent.py               # ChiefSupplyChainOfficer (root) + AgentTool wiring
+    sub_agents/            # 5 departments, 11 specialists, Executive Briefing Pipeline
     tools.py               # BigQuery tools (SELECT-only, safety caps)
     olist_metrics.py       # Custom eval metrics
   scripts/
