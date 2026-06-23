@@ -12,7 +12,7 @@ This agent gives natural-language answers with tool-backed BigQuery evidence.
 
 - Framework: Google ADK 2.3
 - Model: `gemini-2.5-flash`
-- Data store: BigQuery dataset `gen-lang-client-0891445661.olist_ecommerce` in `US`
+- Data store: BigQuery dataset `<YOUR_GCP_PROJECT>.olist_ecommerce` in `US`
 - Entrypoint: `olist_ops/agent.py`, exposing `root_agent`
 - Auth: Vertex AI / Application Default Credentials (`GOOGLE_GENAI_USE_VERTEXAI=1`)
 
@@ -78,7 +78,7 @@ uv sync
 Environment variables used by the code:
 
 ```bash
-GOOGLE_CLOUD_PROJECT=gen-lang-client-0891445661
+GOOGLE_CLOUD_PROJECT=your-gcp-project-id
 BQ_DATASET_ID=olist_ecommerce
 BQ_DATASET_LOCATION=US
 GOOGLE_GENAI_USE_VERTEXAI=1
