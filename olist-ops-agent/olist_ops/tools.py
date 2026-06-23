@@ -477,7 +477,7 @@ def get_installment_stats() -> dict:
 # ---------------------------------------------------------------------------
 
 def get_state_pairs(limit: int = 20) -> dict:
-    """Top seller_state -> customer_state lanes (aggregated; never SELECT *)."""
+    """Top seller_state -> customer_state lanes with orders, avg_freight, avg_delivery_days."""
     limit = max(1, min(int(limit or 20), 200))
     sql = f"""
     SELECT
