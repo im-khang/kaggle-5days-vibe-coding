@@ -10,7 +10,23 @@ from typing import Optional
 
 from google.cloud import bigquery
 
-PROJECT = os.environ["GOOGLE_CLOUD_PROJECT"]  # must be set in .env
+def _require_project() -> str:
+    """Return the GCP project id, failing only when a tool actually runs.
+
+    Lazy so importing this module (and the agent tree) does not require env
+    vars to be set — important for `adk web` discovery, notebook import, and
+    unit tests that never hit BigQuery.
+    """
+    try:
+        return os.environ["GOOGLE_CLOUD_PROJECT"]
+    except KeyError as exc:  # pragma: no cover - defensive
+        raise RuntimeError(
+            "GOOGLE_CLOUD_PROJECT is not set. Export it (or put it in .env) "
+            "before running any BigQuery-backed tool."
+        ) from exc
+
+
+PROJECT = os.getenv("GOOGLE_CLOUD_PROJECT", "")  # may be empty until a tool runs
 DATASET = os.getenv("BQ_DATASET_ID", "olist_ecommerce")
 LOCATION = os.getenv("BQ_DATASET_LOCATION", "US")
 

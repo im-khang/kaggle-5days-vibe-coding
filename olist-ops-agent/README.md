@@ -46,6 +46,62 @@ Key design: the CSCO uses `AgentTool` (not `sub_agents`), so it can call
 multiple departments one-by-one and synthesize cross-domain answers. The old
 transfer pattern handed control to ONE specialist and ended the turn.
 
+## MCP Servers & Tools (standing on giants)
+
+Beyond the in-process Python tools, this project wires real, public MCP servers
+and Google's first-party BigQuery toolset to each agent by role. We do **not**
+ship a bespoke MCP server as the primary integration — we stand on existing
+servers from the open-source and Google ecosystems.
+
+### Google first-party BigQuery toolset (read-only)
+
+`olist_ops/mcp_toolsets.py::google_bigquery_toolset()` returns Google's official
+`BigQueryToolset` (`google.adk.integrations.bigquery`) configured with
+`WriteMode.BLOCKED` (read-only). It exposes `execute_sql`, `forecast` (TimesFM),
+`analyze_contribution`, `detect_anomalies`, `ask_data_insights`, and
+`search_catalog`. Each agent receives only the subset it needs via `tool_filter`.
+
+### Public MCP servers (stdio)
+
+| Factory | Server | Transport |
+|---|---|---|
+| `fetch_toolset()` | `mcp-server-fetch` | `uvx` |
+| `duck_search_toolset()` | `duckduckgo-mcp-server` | `uvx` |
+| `sequential_thinking_toolset()` | `@modelcontextprotocol/server-sequential-thinking` | `npx` |
+| `memory_toolset()` | `@modelcontextprotocol/server-memory` | `npx` |
+
+### Agent → tool mapping
+
+| Agent | Role-matched tools |
+|---|---|
+| OrdersAgent | Google BQ `forecast` (delivery-time projections) |
+| LaneAgent | Google BQ `detect_anomalies`, `analyze_contribution` |
+| GeoRoutingAgent | Google BQ `analyze_contribution` (freight drivers) |
+| SellerPerformanceAgent | DuckDuckGo search (industry benchmarks) |
+| SellerRiskAgent | Sequential-thinking + Google BQ `detect_anomalies`, `analyze_contribution` |
+| ComplaintsAgent | Sequential-thinking (complaint clustering) |
+| SynthesisAgent | Sequential-thinking (risk prioritization) |
+| DataAnalystAgent | fetch + memory + full Google BQ toolset |
+
+A standalone custom MCP server (`olist_ops/mcp_server.py`) and an MCP-consuming
+agent variant (`olist_ops/mcp_agent.py`) are also included to demonstrate the
+full MCP server/client loop in code.
+
+## Agent Skills (ADK skills + CLI)
+
+`skills/` contains role-specific, state-aware ADK skills (`SKILL.md` with YAML
+frontmatter): `executive-briefing`, `seller-risk-audit`, `freight-lane-analysis`.
+Each encodes trigger conditions, numbered steps, pitfalls, and output format.
+
+`olist_ops/skill_registry.py` implements a concrete ADK `SkillRegistry`
+(`LocalSkillRegistry`) that loads these skills and supports `get_skill` /
+`search_skills`. CLI:
+
+```bash
+uv run python -m olist_ops.skill_registry --list
+uv run python -m olist_ops.skill_registry --show executive-briefing
+```
+
 Important caveats disclosed in answers:
 - No `carrier_id`: lane performance uses `customer_state` as proxy.
 - No returns table: `canceled` + `unavailable` order status is the proxy.
@@ -161,6 +217,37 @@ Target custom metrics:
 - `response_has_table`
 - `intent_satisfaction`
 - `sql_safety`
+
+## Orchestrator Routing Probes
+
+`tests/orchestrator_routing_check.py` is a live routing test: it runs 10
+advanced prompts through `root_agent` with an ADK `BasePlugin` that records
+every agent activation and tool call (including nested specialist + MCP calls),
+then asserts the orchestrator reached the correct department **and** specialist.
+
+```bash
+cd olist-ops-agent
+set -a; source .env; set +a
+uv run python tests/orchestrator_routing_check.py
+```
+
+Each probe forces the CSCO to route past the department head down to one
+specific specialist — proving the hierarchy resolves, not just the top level.
+Result: **10/10 passing** (report written to
+`tests/eval/orchestrator_routing_report.json`).
+
+| # | Prompt focus | Expected path | Proves |
+|---|---|---|---|
+| Q1 | 5 sellers, on-time <80% AND review <3.5, risk tier + intervention | CSCO → HeadOfSellerOps → **SellerRiskAgent** | Multi-factor risk routed to risk agent, not KPI agent |
+| Q2 | Forecast avg delivery days next 30d for SP | CSCO → HeadOfFulfillment → **OrdersAgent** | Forecast delegated (Google BQ `forecast`), not refused |
+| Q3 | Lateness outliers + lanes contributing most | CSCO → HeadOfFulfillment → **LaneAgent** | Anomaly/contribution lane analysis |
+| Q4 | Decompose freight by seller_state, top 50 lanes | CSCO → HeadOfFulfillment → **GeoRoutingAgent** | Lane vs seller-state disambiguation |
+| Q5 | Top-quartile seller on-time vs public benchmarks | CSCO → HeadOfSellerOps → **SellerPerformanceAgent** | External-benchmark question still delegated (DuckDuckGo MCP), not refused |
+| Q6 | Cluster top 50 1-2★ comments into 4 themes | CSCO → HeadOfCX → **ComplaintsAgent** | Qualitative clustering routed to complaints, not reviews (sequential-thinking MCP) |
+| Q7 | Review-score distribution by delay bucket | CSCO → HeadOfCX → **ReviewsAgent** | Numeric CSAT routed to reviews |
+| Q8 | 5 worst states by cancel/unavailable rate | CSCO → HeadOfCX → **ReturnsAgent** | Returns proxy + caveat |
+| Q9 | Credit-card installment distribution | CSCO → HeadOfFinance → **PaymentsAgent** | Finance routing |
+| Q10 | Find a view joining orders + reviews, list columns | CSCO → HeadOfBI → **DataAnalystAgent** | Catalog/schema lookup (Google BQ `search_catalog`) |
 
 ## Safety
 

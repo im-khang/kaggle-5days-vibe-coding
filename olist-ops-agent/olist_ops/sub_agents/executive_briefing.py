@@ -11,6 +11,7 @@ from __future__ import annotations
 from google.adk.agents import Agent, ParallelAgent, SequentialAgent
 from google.adk.tools import FunctionTool
 
+from olist_ops.mcp_toolsets import sequential_thinking_toolset
 from olist_ops.sub_agents.common import MODEL
 from olist_ops.tools import (
     get_delivery_stats,
@@ -96,8 +97,11 @@ Write a structured 1-page executive summary with:
 
 Be concise, data-driven, and cite actual numbers from the reports above.
 Do not invent numbers not found in the reports.
+For prioritising the Top 3 Risks, you MAY use the seq_sequentialthinking tool
+to reason through severity before writing the final list.
 """,
     output_key="executive_briefing",
+    tools=[sequential_thinking_toolset()],
 )
 
 # --- Sequential Pipeline ---

@@ -5,6 +5,13 @@ from google.adk.agents import Agent
 from google.adk.tools import FunctionTool
 
 from olist_ops.sub_agents.common import MODEL, SHARED_TAIL
+from olist_ops.mcp_toolsets import (
+    duck_search_toolset,
+    fetch_toolset,
+    google_bigquery_toolset,
+    memory_toolset,
+    sequential_thinking_toolset,
+)
 from olist_ops.tools import (
     DATASET,
     PROJECT,
@@ -35,9 +42,17 @@ orders_agent = Agent(
         " days, last-mile time, on-time vs estimate, and days late vs estimate."
         " Use get_order_status(order_id) for one order, or"
         " get_delivery_stats(state=None) for aggregates."
+        " For forward-looking questions ('what will delivery time look like next"
+        " month', 'forecast on-time rate'), you MAY use Google's first-party"
+        " bigquery forecast tool (TimesFM) on the orders_enriched view. Always"
+        " label forecasts as model estimates, not actuals."
         + SHARED_TAIL
     ),
-    tools=[FunctionTool(get_order_status), FunctionTool(get_delivery_stats)],
+    tools=[
+        FunctionTool(get_order_status),
+        FunctionTool(get_delivery_stats),
+        google_bigquery_toolset(tool_filter=["forecast"]),
+    ],
 )
 
 lane_agent = Agent(
@@ -52,9 +67,17 @@ lane_agent = Agent(
         " does not name carriers, so 'carrier' = customer_state lane proxy."
         " Always disclose this proxy when answering. Use"
         " get_lane_performance(state=None)."
+        " For lane outliers or drivers of lateness, use Google's first-party"
+        " bigquery detect_anomalies or analyze_contribution tools against"
+        " carrier_kpis."
         + SHARED_TAIL
     ),
-    tools=[FunctionTool(get_lane_performance)],
+    tools=[
+        FunctionTool(get_lane_performance),
+        google_bigquery_toolset(
+            tool_filter=["detect_anomalies", "analyze_contribution"]
+        ),
+    ],
 )
 
 geo_routing_agent = Agent(
@@ -72,9 +95,14 @@ geo_routing_agent = Agent(
         " and sort the returned rows by avg_freight yourself, then present the"
         " top N. The geolocation table has ~1M rows; never request raw rows"
         " from it."
+        " For contribution questions ('which origin state drives freight cost'),"
+        " use Google's first-party bigquery analyze_contribution tool."
         + SHARED_TAIL
     ),
-    tools=[FunctionTool(get_state_pairs)],
+    tools=[
+        FunctionTool(get_state_pairs),
+        google_bigquery_toolset(tool_filter=["analyze_contribution"]),
+    ],
 )
 
 seller_performance_agent = Agent(
@@ -93,9 +121,14 @@ seller_performance_agent = Agent(
         " KPI (e.g. 'on_time_pct', 'avg_review_score', 'avg_freight'); set"
         " ascending=True for worst/lowest metrics and False for best/highest."
         " Present results as a markdown table."
+        " When the user asks how Olist sellers compare to INDUSTRY BENCHMARKS"
+        " or external standards, you MAY use the duck_search tool to look up"
+        " public e-commerce marketplace benchmarks, then clearly separate"
+        " 'our data' from 'external benchmark (web)'. Never substitute web"
+        " results for our BigQuery numbers."
         + SHARED_TAIL
     ),
-    tools=[FunctionTool(get_seller_kpis)],
+    tools=[FunctionTool(get_seller_kpis), duck_search_toolset()],
 )
 
 seller_risk_agent = Agent(
@@ -111,10 +144,23 @@ seller_risk_agent = Agent(
         " ascending=True) for late-shipping risk. Also consider avg_review_score"
         " and avg_delivery_days in your recommendation. Do not over-penalize"
         " tiny sellers; keep min_orders >= 50 unless user requests otherwise."
+        " For multi-factor risk scoring (late + low reviews + high freight),"
+        " you MAY use the seq_sequentialthinking tool to lay out the reasoning"
+        " steps before the final recommendation."
+        " When the user asks 'which sellers are outliers' or 'who drives the"
+        " bulk of late deliveries', call Google's first-party bigquery"
+        " detect_anomalies tool on seller_kpis, and analyze_contribution to"
+        " decompose total late orders by seller_state. Cite the tool used."
         " Output: risk level, evidence, suggested action."
         + SHARED_TAIL
     ),
-    tools=[FunctionTool(get_seller_kpis)],
+    tools=[
+        FunctionTool(get_seller_kpis),
+        sequential_thinking_toolset(),
+        google_bigquery_toolset(
+            tool_filter=["detect_anomalies", "analyze_contribution"]
+        ),
+    ],
 )
 
 reviews_agent = Agent(
@@ -147,9 +193,16 @@ complaints_agent = Agent(
         " get_cancel_rate(state=None) for cancellation/unavailable proxy. Always"
         " disclose that Olist has no explicit returns table; canceled +"
         " unavailable is the closest proxy."
+        " When grouping complaint themes from raw comments, you MAY use the"
+        " seq_sequentialthinking tool to lay out cluster reasoning before"
+        " presenting a summary."
         + SHARED_TAIL
     ),
-    tools=[FunctionTool(get_low_score_reasons), FunctionTool(get_cancel_rate)],
+    tools=[
+        FunctionTool(get_low_score_reasons),
+        FunctionTool(get_cancel_rate),
+        sequential_thinking_toolset(),
+    ],
 )
 
 returns_agent = Agent(
@@ -209,6 +262,28 @@ Rules:
 - If result is empty, say so; do not invent rows.
 - Refuse out-of-scope questions.
 - Reply in English with markdown tables when useful.
+
+External tools (use sparingly, only when they add value):
+- fetch_fetch(url): retrieve the text of a specific public URL when the user
+  asks you to enrich an answer with an external reference (e.g. the meaning of
+  a Brazilian state code, a public dataset description). Always label fetched
+  content as external and never let it override our BigQuery numbers.
+- mem_* tools: persist and recall small facts across turns in a session (e.g.
+  a derived metric the user named). Do not store secrets or raw PII.
+
+Google first-party BigQuery tools (read-only, WriteMode.BLOCKED):
+- search_catalog: discover relevant tables/views by natural-language query.
+- ask_data_insights: ask a natural-language question about a table and get a
+  Google-generated insight. Good for exploratory questions that our custom
+  tools don't cover.
+- execute_sql: run a read-only SQL query through Google's managed BigQuery
+  toolset (in addition to our local query_bigquery wrapper). Use this when the
+  user explicitly wants the official BigQuery path or when our wrapper's
+  column-name heuristics interfere.
+- detect_anomalies / forecast / analyze_contribution: Google's ML-powered
+  BigQuery tools for anomaly detection, time-series forecasting, and
+  contribution analysis. Use when the user asks for predictive or diagnostic
+  analytics beyond descriptive KPIs.
 """
 
 data_analyst_agent = Agent(
@@ -219,5 +294,21 @@ data_analyst_agent = Agent(
         " that cross tables beyond a department's fixed tools."
     ),
     instruction=DATA_ANALYST_INSTRUCTION,
-    tools=[FunctionTool(list_tables), FunctionTool(get_schema), FunctionTool(query_bigquery)],
+    tools=[
+        FunctionTool(list_tables),
+        FunctionTool(get_schema),
+        FunctionTool(query_bigquery),
+        fetch_toolset(),
+        memory_toolset(),
+        google_bigquery_toolset(
+            tool_filter=[
+                "search_catalog",
+                "ask_data_insights",
+                "execute_sql",
+                "detect_anomalies",
+                "forecast",
+                "analyze_contribution",
+            ]
+        ),
+    ],
 )
