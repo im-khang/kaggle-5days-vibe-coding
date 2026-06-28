@@ -1,6 +1,12 @@
-# Olist Ecommerce Analytics Agent
+<p align="center">
+  <img src="assets/cover.png" alt="Olist Ops Agent — multi-agent analytics over Brazilian ecommerce operations" width="100%" />
+</p>
 
-A multi-agent AI team that answers Brazilian e-commerce operations questions using natural language, backed by BigQuery and Google ADK.
+<h1 align="center">Olist Ecommerce Analytics Agent</h1>
+
+<p align="center">
+  A multi-agent AI team that answers Brazilian e-commerce operations questions using natural language, backed by BigQuery and Google ADK.
+</p>
 
 Built as a capstone for the [Kaggle 5-Day AI Agents Course](https://www.kaggle.com/learn-guide/5-day-ai-agents) (Google × Kaggle, June 2026).
 
