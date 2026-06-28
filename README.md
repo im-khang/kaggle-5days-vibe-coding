@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/cover.png" alt="Olist Ops Agent — multi-agent analytics over Brazilian ecommerce operations" width="100%" />
+  <img src="assets/cover.gif" alt="Olist Ops Agent — multi-agent analytics over Brazilian ecommerce operations" width="100%" />
 </p>
 
 <h1 align="center">Olist Ecommerce Analytics Agent</h1>
