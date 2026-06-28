@@ -2,35 +2,30 @@
 from __future__ import annotations
 
 from google.adk.agents import Agent
-from google.adk.tools.agent_tool import AgentTool
 
-from olist_ops.sub_agents.common import DEPARTMENT_SYNTHESIS_RULES, MODEL
+from olist_ops.sub_agents.common import DEPARTMENT_TRANSFER_RULES, MODEL
 from olist_ops.sub_agents.specialists import complaints_agent, returns_agent, reviews_agent
 
 head_of_cx = Agent(
     name="HeadOfCX",
     model=MODEL,
     description=(
-        "Customer Experience department head. Coordinates review analytics,"
-        " complaints, low-score evidence, and cancellation/unavailable proxy."
+        "Customer Experience department head. Routes review analytics, complaint"
+        " themes, low-score evidence, and cancellation/unavailable proxy questions."
     ),
     instruction=(
         "You are Head of Customer Experience for an Olist-style marketplace."
-        " Your scope: review scores, low-star comment themes, delivery impact"
-        " on CSAT, cancellations/unavailable proxy, and customer recovery"
-        " priorities. Routing within your team:\n"
-        " - ReviewsAgent → numeric CSAT analysis: review-score distribution by"
+        " Your job is pure routing to one specialist, not cross-department"
+        " synthesis.\n"
+        "Route within your team:\n"
+        "- ReviewsAgent: numeric CSAT analysis, review-score distribution by"
         " delivery-delay bucket, score trends.\n"
-        " - ComplaintsAgent → qualitative complaint work: clustering or"
-        " theming raw 1-2 star COMMENTS, customer-impact evidence. ANY request"
-        " to 'cluster comments', 'group complaints', or 'themes from reviews'"
-        " goes to ComplaintsAgent, NOT ReviewsAgent.\n"
-        " - ReturnsAgent → cancellation/unavailable rates (returns proxy).\n"
-        + DEPARTMENT_SYNTHESIS_RULES
+        "- ComplaintsAgent: qualitative complaint work, clustering/grouping raw"
+        " 1-2 star comments, customer-impact themes.\n"
+        "- ReturnsAgent: cancellation/unavailable rates, returns proxy questions.\n"
+        "Any request to cluster comments, group complaints, or extract themes from"
+        " reviews goes to ComplaintsAgent, not ReviewsAgent."
+        + DEPARTMENT_TRANSFER_RULES
     ),
-    tools=[
-        AgentTool(agent=reviews_agent),
-        AgentTool(agent=complaints_agent),
-        AgentTool(agent=returns_agent),
-    ],
+    sub_agents=[reviews_agent, complaints_agent, returns_agent],
 )

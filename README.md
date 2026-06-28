@@ -7,18 +7,19 @@ Built as a capstone for the [Kaggle 5-Day AI Agents Course](https://www.kaggle.c
 ## What It Does
 
 - Answers ops questions about orders, delivery, sellers, reviews, payments, and geography
-- 21-agent team in 5 supply-chain departments (AgentTool pattern for cross-domain synthesis)
-- Routes single-domain Q to one specialist; cross-domain Q calls multiple departments and synthesizes
+- ADK multi-agent team in 3 departments + 2 direct specialists (canonical `sub_agents` transfer routing)
+- Routes each question to the single best agent via ADK's `transfer_to_agent`
+- Broad multi-department reporting handled by an explicit `ExecutiveBriefingPipeline` (Parallel + Sequential)
 - Returns cited, SQL-backed answers — no hallucinated numbers
 - Enforces SELECT-only safety: no writes, 10 GB cap, 30s timeout
 
 ## Architecture
 
 ```
-ChiefSupplyChainOfficer (CSCO)  ← AgentTool pattern: calls depts, synthesizes
+ChiefSupplyChainOfficer (CSCO)  ← sub_agents transfer: routes to ONE agent
 │
 ├── 📦 HeadOfFulfillment
-│     ├── OrdersAgent            delivery timing, lifecycle
+│     ├── OrdersAgent            delivery timing, lifecycle, forecast
 │     ├── LaneAgent              customer-state lane (carrier proxy)
 │     └── GeoRoutingAgent        seller→customer state pairs, freight by lane
 │
@@ -31,11 +32,8 @@ ChiefSupplyChainOfficer (CSCO)  ← AgentTool pattern: calls depts, synthesizes
 │     ├── ComplaintsAgent        low-score comments, customer impact
 │     └── ReturnsAgent           cancellation/unavailable proxy
 │
-├── 💰 HeadOfFinance
-│     └── PaymentsAgent          payment mix, installments
-│
-├── 📊 HeadOfBI
-│     └── DataAnalystAgent       ad-hoc SQL, schema, cross-table joins
+├── 💳 PaymentsAgent             payment mix, installments (direct specialist)
+├── 📊 DataAnalystAgent          ad-hoc SQL, schema, charts (direct specialist)
 │
 └── 📋 ExecutiveBriefingPipeline (SequentialAgent)
       ├── ParallelAgent: [Fulfillment, Seller, CX] KPI collectors
@@ -45,10 +43,10 @@ ChiefSupplyChainOfficer (CSCO)  ← AgentTool pattern: calls depts, synthesizes
 | Layer | Choice |
 |---|---|
 | Framework | Google ADK 2.3 |
-| Model | Gemini 2.5 Flash (Vertex AI) |
+| Model | Gemini 2.5 Flash (Vertex AI or Google AI Studio) |
 | Data | BigQuery dataset `olist_ecommerce` |
-| Auth | Application Default Credentials |
-| Pattern | AgentTool (agents-as-tools) for cross-domain synthesis |
+| Auth | Application Default Credentials or `GOOGLE_API_KEY` |
+| Pattern | `sub_agents` transfer (canonical ADK multi-agent tree) |
 | Workflow | SequentialAgent + ParallelAgent for executive briefing |
 | Eval | ADK eval, 17 cases, 4 custom metrics |
 
@@ -61,10 +59,12 @@ cd kaggle-5days-vibe-coding/olist-ops-agent
 # Install dependencies
 uv sync
 
-# Configure
+# Configure public model access
 cp .env.example .env
-# Edit .env: set GOOGLE_CLOUD_PROJECT to your GCP project
+# Recommended: set GOOGLE_CLOUD_PROJECT, keep GOOGLE_GENAI_USE_VERTEXAI=1,
+# then authenticate with Application Default Credentials.
 gcloud auth application-default login
+# Alternative: set GOOGLE_GENAI_USE_VERTEXAI=0 and GOOGLE_API_KEY for Google AI Studio.
 
 # Download data (9 CSVs, ~120 MB)
 pip install huggingface-hub
@@ -118,8 +118,8 @@ uv run adk eval olist_ops tests/eval/datasets/olist_cases.json \
 ```
 olist-ops-agent/           # The agent application
   olist_ops/
-    agent.py               # ChiefSupplyChainOfficer (root) + AgentTool wiring
-    sub_agents/            # 5 departments, 11 specialists, Executive Briefing Pipeline
+    agent.py               # ChiefSupplyChainOfficer (root) + sub_agents transfer tree
+    sub_agents/            # 3 multi-specialist departments + 2 direct specialists + Executive Briefing Pipeline
     tools.py               # BigQuery tools (SELECT-only, safety caps)
     olist_metrics.py       # Custom eval metrics
   scripts/
@@ -146,7 +146,7 @@ AGENTS.md                 # Agent coding conventions
 - [Google ADK 2.3](https://google.github.io/adk-docs/) — multi-agent framework
 - [Gemini 2.5 Flash](https://ai.google.dev/gemini-api/docs/models) — LLM for routing + specialists
 - [BigQuery](https://cloud.google.com/bigquery) — data warehouse
-- [Vertex AI](https://cloud.google.com/vertex-ai) — model hosting
+- [Vertex AI](https://cloud.google.com/vertex-ai) or Google AI Studio API key — public model access
 - Python 3.11+, uv
 
 ## License

@@ -144,7 +144,7 @@ def sql_safety(eval_metric: EvalMetric, actual_invocations, expected_invocations
         for call in get_all_tool_calls(invocation.intermediate_data):
             sql = str((call.args or {}).get("sql") or "")
             normalized = sql.strip().lower()
-            if normalized and not normalized.startswith("select") and not normalized.startswith("with "):
+            if normalized and not normalized.startswith("select") and not normalized.startswith("with"):
                 bad.append("not_select")
             tokens = set(normalized.replace(";", " ").replace("(", " ").replace(")", " ").split())
             bad.extend(sorted(forbidden & tokens))

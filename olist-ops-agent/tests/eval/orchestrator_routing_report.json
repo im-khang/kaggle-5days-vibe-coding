@@ -7,16 +7,18 @@
       "SellerRiskAgent"
     ],
     "tools": [
-      "HeadOfSellerOps",
-      "SellerRiskAgent",
-      "get_seller_kpis"
+      "transfer_to_agent",
+      "transfer_to_agent",
+      "seq__sequentialthinking",
+      "get_seller_kpis",
+      "seq__sequentialthinking"
     ],
     "expected": [
       "HeadOfSellerOps",
       "SellerRiskAgent"
     ],
     "ok": true,
-    "final_preview": "I've identified 5 sellers (with a minimum of 50 orders) whose on-time delivery percentage is below 80% and whose average review score is below 3.5. These sellers represent a high risk due to their poor performance in both fulfillment and cu"
+    "final_preview": "Risk Level, Evidence, Suggested Action (tool used: `get_seller_kpis`):\n\n**1. Seller ID: 54965bbe3e4f07ae045b90b0b8541f52**\n*   **Risk Level**: Very High\n*   **Evidence**: On-time %: 67.9% (very low), Average Review Score: 2.94 (poor), Avera"
   },
   {
     "label": "Q2 / OrdersAgent (forecast)",
@@ -26,60 +28,52 @@
       "OrdersAgent"
     ],
     "tools": [
-      "HeadOfFulfillment",
-      "OrdersAgent"
+      "transfer_to_agent",
+      "transfer_to_agent"
     ],
     "expected": [
       "HeadOfFulfillment",
       "OrdersAgent"
     ],
     "ok": true,
-    "final_preview": "I need a bit more information to provide that forecast.\n\nCould you please tell me:\n1. The Google Cloud project ID where the `orders_enriched` view is located?\n2. When you say \"shipped from SP\", are you referring to the `customer_state` or t"
+    "final_preview": "I can help with that. To forecast the average delivery days, I need to know the Google Cloud Project ID where the `orders_enriched` view is located. Could you please provide the `project_id`?"
   },
   {
     "label": "Q3 / LaneAgent (anomaly + contribution)",
     "agents": [
       "ChiefSupplyChainOfficer",
       "HeadOfFulfillment",
-      "LaneAgent",
       "LaneAgent"
     ],
     "tools": [
-      "HeadOfFulfillment",
-      "LaneAgent",
-      "get_lane_performance",
-      "LaneAgent",
-      "get_lane_performance"
+      "transfer_to_agent",
+      "transfer_to_agent"
     ],
     "expected": [
       "HeadOfFulfillment",
       "LaneAgent"
     ],
     "ok": true,
-    "final_preview": "The Head of Fulfillment has identified two sets of customer-state lanes based on lateness:\n\n**Statistical Outliers for Lateness (Lowest On-time Delivery Percentage):**\n\nThese states have a significantly lower on-time delivery rate compared "
+    "final_preview": "Olist does not name carriers; 'carrier' is a proxy for `customer_state`.\n\nTo identify statistical outliers for lateness and the lanes that contribute most to total late deliveries, I need to use the `detect_anomalies` and `analyze_contribut"
   },
   {
     "label": "Q4 / GeoRoutingAgent (contribution)",
     "agents": [
       "ChiefSupplyChainOfficer",
       "HeadOfFulfillment",
-      "GeoRoutingAgent",
-      "HeadOfSellerOps",
-      "SellerPerformanceAgent"
+      "GeoRoutingAgent"
     ],
     "tools": [
-      "HeadOfFulfillment",
-      "GeoRoutingAgent",
-      "get_state_pairs",
-      "HeadOfSellerOps",
-      "SellerPerformanceAgent"
+      "transfer_to_agent",
+      "transfer_to_agent",
+      "get_state_pairs"
     ],
     "expected": [
       "HeadOfFulfillment",
       "GeoRoutingAgent"
     ],
     "ok": true,
-    "final_preview": "I was able to identify the top 50 lanes by volume with the help of the Head of Fulfillment. However, when I attempted to decompose the total freight cost by seller state for these specific lanes using the Head of Seller Operations, I encoun"
+    "final_preview": "Here is the decomposition of total freight cost by seller state for the top 50 lanes by volume:\n- SP: 1475727.87\n- MG: 104712.59\n- PR: 96956.12\n- RJ: 38221.36\n- SC: 46272.29\n- RS: 11130.34\n- DF: 6146.85\n\nRegarding which origin state 'drives"
   },
   {
     "label": "Q5 / SellerPerformanceAgent (external benchmark)",
@@ -89,8 +83,9 @@
       "SellerPerformanceAgent"
     ],
     "tools": [
-      "HeadOfSellerOps",
-      "SellerPerformanceAgent",
+      "transfer_to_agent",
+      "transfer_to_agent",
+      "get_seller_kpis",
       "get_seller_kpis",
       "duck__search",
       "duck__fetch_content",
@@ -103,7 +98,7 @@
       "SellerPerformanceAgent"
     ],
     "ok": true,
-    "final_preview": "Olist's top-quartile sellers achieve an on-time delivery rate of at least 93.97%.\n\nWhen compared to external e-commerce marketplace benchmarks:\n\n| Benchmark Category | On-Time Delivery Rate |\n| :-------------------------------------------- "
+    "final_preview": "Here's how Olist's top-quartile seller on-time percentage compares:\n\n**Our Data (Olist Sellers):**\n\nFor Olist sellers with a minimum of 50 orders, the top quartile achieves an **on-time delivery percentage of 100%**. This indicates that Oli"
   },
   {
     "label": "Q6 / ComplaintsAgent (clustering)",
@@ -113,11 +108,10 @@
       "ComplaintsAgent"
     ],
     "tools": [
-      "HeadOfCX",
-      "ComplaintsAgent",
+      "transfer_to_agent",
+      "transfer_to_agent",
+      "seq__sequentialthinking",
       "get_low_score_reasons",
-      "seq__sequentialthinking",
-      "seq__sequentialthinking",
       "seq__sequentialthinking",
       "seq__sequentialthinking"
     ],
@@ -126,7 +120,7 @@
       "ComplaintsAgent"
     ],
     "ok": true,
-    "final_preview": "Here are the themes identified from the top 50 1-2 star customer comments, ranked by frequency:\n\n| Rank | Theme | Number of Comments |\n|------|--------------------------------|--------------------|\n| 1 | Product Quality & Misrepresentation "
+    "final_preview": "Based on the analysis of 47 unique 1-2 star comments, I have identified four primary themes and ranked them by frequency:\n\n1.  **Delivery Problems** (21 comments):\n    *   Examples: non-delivery, partial delivery, significant delays, items "
   },
   {
     "label": "Q7 / ReviewsAgent (delay buckets)",
@@ -136,8 +130,8 @@
       "ReviewsAgent"
     ],
     "tools": [
-      "HeadOfCX",
-      "ReviewsAgent",
+      "transfer_to_agent",
+      "transfer_to_agent",
       "get_review_breakdown"
     ],
     "expected": [
@@ -145,7 +139,7 @@
       "ReviewsAgent"
     ],
     "ok": true,
-    "final_preview": "Here's a breakdown of review scores by delivery delay, illustrating the significant impact on CSAT:\n\n| Delivery Delay Bucket | Average Review Score | Percentage of 1-2 Star Reviews | Number of Reviews |\n| :-------------------- | :----------"
+    "final_preview": "Here is the review-score distribution by delivery-delay bucket:\n\n*   **On or Early Delivery**:\n    *   Average Review Score: 4.29\n    *   Percentage of 1-2 Star Reviews: 9.28%\n    *   Total Reviews: 89,949\n*   **Late by 1-3 Days**:\n    *   "
   },
   {
     "label": "Q8 / ReturnsAgent (cancel proxy)",
@@ -155,8 +149,8 @@
       "ReturnsAgent"
     ],
     "tools": [
-      "HeadOfCX",
-      "ReturnsAgent",
+      "transfer_to_agent",
+      "transfer_to_agent",
       "get_cancel_rate"
     ],
     "expected": [
@@ -164,50 +158,39 @@
       "ReturnsAgent"
     ],
     "ok": true,
-    "final_preview": "The 5 customer states with the highest cancellation/unavailable rates are:\n\n| State | Cancellation/Unavailable Rate |\n|-------|-------------------------------|\n| RO    | 2.77%                         |\n| RR    | 2.17%                       "
+    "final_preview": "Here are the 5 customer states with the highest cancellation/unavailable rates:\n\n1.  **RO**: 2.77%\n2.  **RR**: 2.17%\n3.  **SP**: 1.48%\n4.  **MA**: 1.47%\n5.  **SE**: 1.43%\n\nPlease note: Olist has no explicit returns table; we treat order_sta"
   },
   {
     "label": "Q9 / PaymentsAgent (installments)",
     "agents": [
       "ChiefSupplyChainOfficer",
-      "HeadOfFinance",
-      "PaymentsAgent",
       "PaymentsAgent"
     ],
     "tools": [
-      "HeadOfFinance",
-      "PaymentsAgent",
-      "get_installment_stats",
-      "PaymentsAgent",
+      "transfer_to_agent",
       "get_installment_stats"
     ],
     "expected": [
-      "HeadOfFinance",
       "PaymentsAgent"
     ],
     "ok": true,
-    "final_preview": "The Head of Finance reports the following for credit card payments:\n\n**Installment Distribution:**\n\n| Installments | Payments | Average Payment Value (R$) |\n|--------------|----------|----------------------------|\n| 0            | 2        "
+    "final_preview": "Here is the installment distribution for credit-card payments:\n\n| Payment Installments | Payments | Average Payment Value |\n|:---------------------|:---------|:----------------------|\n| 0 | 2 | 94.31 |\n| 1 | 25455 | 95.87 |\n| 2 | 12413 | 12"
   },
   {
     "label": "Q10 / DataAnalystAgent (catalog + insights)",
     "agents": [
       "ChiefSupplyChainOfficer",
-      "HeadOfBI",
       "DataAnalystAgent"
     ],
     "tools": [
-      "HeadOfBI",
-      "DataAnalystAgent",
-      "list_tables",
-      "get_schema",
-      "get_schema",
+      "transfer_to_agent",
+      "search_catalog",
       "get_schema"
     ],
     "expected": [
-      "HeadOfBI",
       "DataAnalystAgent"
     ],
     "ok": true,
-    "final_preview": "The BigQuery view that joins orders with review scores is `review_kpis`.\n\n**View Name:** `review_kpis`\n\n**Column List:**\n*   `delay_bucket` (STRING)\n*   `reviews` (INTEGER)\n*   `avg_review_score` (FLOAT)\n*   `pct_1_2_star` (FLOAT)\n\n**Summar"
+    "final_preview": "The view `review_kpis` contains aggregated key performance indicators related to customer reviews, including the number of reviews, average review score, and the percentage of 1 and 2-star reviews, categorized by delay buckets.\n\nIts columns"
   }
 ]

@@ -4,6 +4,7 @@ from __future__ import annotations
 from google.adk.agents import Agent
 from google.adk.tools import FunctionTool
 
+from olist_ops.chart_tool import create_chart
 from olist_ops.sub_agents.common import MODEL, SHARED_TAIL
 from olist_ops.mcp_toolsets import (
     duck_search_toolset,
@@ -255,6 +256,11 @@ Workflow:
    SELECT-only, 10 GB cap, 30s timeout, and 1000-row truncation.
 4. Aggregate when touching geolocation (~1M rows); never SELECT *.
 5. Quote the table/view used in the answer.
+6. When the user asks for a chart/plot/visualization, first run the needed
+   SQL aggregation, keep the result small (normally <= 20 rows), then call
+   create_chart(chart_type, labels, values, title, x_label, y_label). Use bar
+   for ranked categories, barh for long category labels, and line for time
+   series. Return the artifact filename and summarize what the chart shows.
 
 Rules:
 - No INSERT/UPDATE/DELETE/DDL/MERGE.
@@ -298,6 +304,7 @@ data_analyst_agent = Agent(
         FunctionTool(list_tables),
         FunctionTool(get_schema),
         FunctionTool(query_bigquery),
+        FunctionTool(create_chart),
         fetch_toolset(),
         memory_toolset(),
         google_bigquery_toolset(

@@ -56,7 +56,7 @@ def _validate_select_sql(sql: str) -> tuple[bool, str]:
         return False, "empty SQL"
     stripped = sql.strip().rstrip(";").strip()
     lower = stripped.lower()
-    if not (lower.startswith("select") or lower.startswith("with ")):
+    if not (lower.startswith("select") or lower.startswith("with")):
         return False, "Only SELECT / CTE-then-SELECT statements are allowed."
     # word-boundary forbidden-keyword scan
     for kw in _FORBIDDEN_KEYWORDS:

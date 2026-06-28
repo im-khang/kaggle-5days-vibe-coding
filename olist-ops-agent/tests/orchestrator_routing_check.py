@@ -103,14 +103,14 @@ QUESTIONS = [
         "Q9 / PaymentsAgent (installments)",
         "Installment distribution for credit-card payments — show the long "
         "tail and average installment count.",
-        ["HeadOfFinance", "PaymentsAgent"],
+        ["PaymentsAgent"],
     ),
     (
         "Q10 / DataAnalystAgent (catalog + insights)",
         "Use the BigQuery catalog to find any view that joins orders with "
         "review scores, then return its column list and a one-line summary "
         "of what it contains.",
-        ["HeadOfBI", "DataAnalystAgent"],
+        ["DataAnalystAgent"],
     ),
 ]
 

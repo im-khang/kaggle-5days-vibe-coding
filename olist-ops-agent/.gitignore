@@ -16,5 +16,11 @@ __pycache__/
 data/*.csv
 data/*.csv.gz
 
+# Local/private submission artifacts
+SUBMISSION_GUIDE.md
+kaggle_writeup_draft.md
+VIDEO_RECORDING_GUIDE.md
+video_output/
+
 # macOS
 .DS_Store

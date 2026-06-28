@@ -24,7 +24,7 @@ When you make changes, keep these consistent: code, docs, and decisions should n
 
 The agent lives in `olist-ops-agent/`:
 
-- `olist_ops/agent.py` — `root_agent = OlistOrchestrator` with 8 specialist sub-agents
+- `olist_ops/agent.py` — `root_agent = ChiefSupplyChainOfficer` with department heads + direct specialists routed via canonical ADK `sub_agents` transfer
 - `olist_ops/tools.py` — BigQuery tools (SELECT-only, billing cap, timeout)
 - `tests/eval/` — eval cases + custom metrics
 - `scripts/bigquery_upload.py` — load CSVs into BigQuery + create views

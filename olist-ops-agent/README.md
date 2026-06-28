@@ -14,16 +14,16 @@ This agent gives natural-language answers with tool-backed BigQuery evidence.
 - Model: `gemini-2.5-flash`
 - Data store: BigQuery dataset `<YOUR_GCP_PROJECT>.olist_ecommerce` in `US`
 - Entrypoint: `olist_ops/agent.py`, exposing `root_agent`
-- Auth: Vertex AI / Application Default Credentials (`GOOGLE_GENAI_USE_VERTEXAI=1`)
-- Pattern: **AgentTool** (agents-as-tools) — CSCO calls department heads and synthesizes
+- Auth: Vertex AI / Application Default Credentials (`GOOGLE_GENAI_USE_VERTEXAI=1`) or Google AI Studio (`GOOGLE_API_KEY`)
+- Pattern: **sub_agents transfer** (canonical ADK multi-agent tree) — the CSCO routes each question to the single best agent via `transfer_to_agent`
 - Workflow: **SequentialAgent + ParallelAgent** for executive briefing pipeline
 
-### Agent Team (5 departments, 21 agents total)
+### Agent Team (3 departments + 2 direct specialists, transfer routing)
 
 ```
-ChiefSupplyChainOfficer (CSCO)
+ChiefSupplyChainOfficer (CSCO)   ← sub_agents transfer: routes to ONE agent
 ├── 📦 HeadOfFulfillment
-│     ├── OrdersAgent            delivery timing, lifecycle
+│     ├── OrdersAgent            delivery timing, lifecycle, forecast
 │     ├── LaneAgent              customer-state lane (carrier proxy)
 │     └── GeoRoutingAgent        seller→customer pairs, freight by lane
 ├── 🤝 HeadOfSellerOps
@@ -33,18 +33,20 @@ ChiefSupplyChainOfficer (CSCO)
 │     ├── ReviewsAgent           CSAT by delay bucket
 │     ├── ComplaintsAgent        low-score comments, customer impact
 │     └── ReturnsAgent           cancellation/unavailable proxy
-├── 💰 HeadOfFinance
-│     └── PaymentsAgent          payment mix, installments
-├── 📊 HeadOfBI
-│     └── DataAnalystAgent       ad-hoc SQL, schema, cross-table joins
+├── 💳 PaymentsAgent             payment mix, installments (direct specialist)
+├── 📊 DataAnalystAgent          ad-hoc SQL, schema, charts (direct specialist)
 └── 📋 ExecutiveBriefingPipeline (SequentialAgent)
       ├── ParallelAgent[FulfillmentKPI, SellerKPI, CXKPI]
       └── SynthesisAgent → reads state keys → exec summary
 ```
 
-Key design: the CSCO uses `AgentTool` (not `sub_agents`), so it can call
-multiple departments one-by-one and synthesize cross-domain answers. The old
-transfer pattern handed control to ONE specialist and ended the turn.
+Key design: the CSCO uses `sub_agents=[...]`, so ADK exposes a real multi-agent
+transfer graph and the orchestrator hands control to exactly one agent per turn.
+Single-specialist departments (Finance, BI) were collapsed — `PaymentsAgent` and
+`DataAnalystAgent` sit directly under the CSCO to avoid a redundant routing hop.
+Broad multi-department reporting is handled by the `ExecutiveBriefingPipeline`
+(deterministic Parallel + Sequential synthesis), not by orchestrator-level
+free-form synthesis.
 
 ## MCP Servers & Tools (standing on giants)
 
@@ -156,8 +158,18 @@ Environment variables used by the code:
 GOOGLE_CLOUD_PROJECT=your-gcp-project-id
 BQ_DATASET_ID=olist_ecommerce
 BQ_DATASET_LOCATION=US
+
+# Option A: Vertex AI + ADC
 GOOGLE_GENAI_USE_VERTEXAI=1
 GOOGLE_CLOUD_LOCATION=us-central1
+OLIST_MODEL_PROVIDER=vertex
+OLIST_MODEL=gemini-2.5-flash
+
+# Option B: Google AI Studio API key
+# GOOGLE_GENAI_USE_VERTEXAI=0
+# GOOGLE_API_KEY=your-g...y
+# OLIST_MODEL_PROVIDER=vertex
+# OLIST_MODEL=gemini-2.5-flash
 ```
 
 Do not commit `.env`.
@@ -189,12 +201,12 @@ Single-domain:
 - `Do late deliveries get worse reviews?`
 - `Installment distribution for credit card payments.`
 
-Cross-domain (CSCO calls multiple departments and synthesizes):
-- `Which state has both the worst on-time delivery AND highest cancellation rate?`
-- `Compare the 5 worst on-time sellers (min 50 orders) vs the 5 best. What is the review-score gap?`
-
 Executive briefing (full Sequential + Parallel pipeline):
 - `Give me a full executive summary of our supply chain health.`
+
+Note: this canonical transfer tree routes each question to one agent. For broad
+cross-department reporting, use the Executive Briefing pipeline instead of
+expecting orchestrator-level free-form synthesis.
 
 ## Eval
 
@@ -246,8 +258,8 @@ Result: **10/10 passing** (report written to
 | Q6 | Cluster top 50 1-2★ comments into 4 themes | CSCO → HeadOfCX → **ComplaintsAgent** | Qualitative clustering routed to complaints, not reviews (sequential-thinking MCP) |
 | Q7 | Review-score distribution by delay bucket | CSCO → HeadOfCX → **ReviewsAgent** | Numeric CSAT routed to reviews |
 | Q8 | 5 worst states by cancel/unavailable rate | CSCO → HeadOfCX → **ReturnsAgent** | Returns proxy + caveat |
-| Q9 | Credit-card installment distribution | CSCO → HeadOfFinance → **PaymentsAgent** | Finance routing |
-| Q10 | Find a view joining orders + reviews, list columns | CSCO → HeadOfBI → **DataAnalystAgent** | Catalog/schema lookup (Google BQ `search_catalog`) |
+| Q9 | Credit-card installment distribution | CSCO → **PaymentsAgent** (direct) | Payments routed without a redundant head |
+| Q10 | Find a view joining orders + reviews, list columns | CSCO → **DataAnalystAgent** (direct) | Catalog/schema lookup (Google BQ `search_catalog`) |
 
 ## Safety
 
