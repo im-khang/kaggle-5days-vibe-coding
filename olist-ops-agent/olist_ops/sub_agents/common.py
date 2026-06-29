@@ -20,7 +20,7 @@ def _build_model():
     if provider in {"openai", "openai-compatible"}:
         from google.adk.models.lite_llm import LiteLlm
 
-        api_base = os.getenv("OLIST_OPENAI_BASE_URL", "http://localhost:20128/v1")
+        api_base = os.getenv("OLIST_OPENAI_BASE_URL", "http://localhost:11434/v1")
         api_key = os.getenv("OLIST_OPENAI_API_KEY", "not-needed")
         return LiteLlm(
             model=f"openai/{model_name}",
@@ -43,7 +43,8 @@ def _build_model():
 # choose Vertex AI (GOOGLE_GENAI_USE_VERTEXAI=1) or Google AI Studio
 # (GOOGLE_API_KEY). Local maintainer override only:
 #   OLIST_MODEL_PROVIDER=openai-compatible OLIST_MODEL=main \
-#     OLIST_OPENAI_BASE_URL=http://localhost:20128/v1 uv run adk web --port 8001 .
+#   OLIST_MODEL_PROVIDER=openai-compatible OLIST_MODEL=llama3.1 \
+#     OLIST_OPENAI_BASE_URL=http://localhost:11434/v1 uv run adk web --port 8001 .
 MODEL = _build_model()
 
 SHARED_TAIL = (

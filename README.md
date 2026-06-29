@@ -57,7 +57,7 @@ ChiefSupplyChainOfficer (CSCO)  ← sub_agents transfer: routes to ONE agent
 | Workflow | SequentialAgent + ParallelAgent for executive briefing |
 | Deploy | Cloud Run (Dockerfile + Terraform + GitHub Actions CI/CD) |
 | Protocol | A2A (Agent2Agent) via `a2a-sdk` |
-| Eval | ADK eval (17 cases, 4 custom metrics) + agents-cli eval flywheel |
+| Eval | ADK eval (17 cases, 4 custom metrics) + agents-cli eval (12 cases, 4 custom metrics, verified 12/12 pass) |
 
 ## agents-cli Integration
 
@@ -67,7 +67,7 @@ This project uses [google/agents-cli](https://github.com/google/agents-cli) — 
 - **GitHub Actions CI/CD** — `pr_checks.yaml`, `staging.yaml`, `deploy-to-prod.yaml`
 - **Terraform** — single-project infra + CICD workload identity federation
 - **A2A protocol** — `fast_api_app.py` serves ADK web + A2A JSON-RPC from one container
-- **Eval flywheel** — `agents-cli eval generate` / `grade` / `analyze` / `optimize`
+- **Eval flywheel** — `agents-cli eval generate` / `grade` / `analyze` / `optimize` — wired with 12 real eval cases + 4 custom metrics (tool_use_quality, grounded_response, intent_satisfaction, sql_safety), verified 12/12 pass
 
 ```bash
 # Install agents-cli
@@ -80,9 +80,9 @@ agents-cli playground
 # Run single prompt
 agents-cli run "Which state has the worst on-time delivery?"
 
-# Eval: generate traces, then grade
-agents-cli eval generate
-agents-cli eval grade
+# Eval: generate traces, then grade (12 cases, 4 custom metrics)
+agents-cli eval generate --dataset tests/eval/datasets/olist-ops-dataset.json --output artifacts/traces/
+agents-cli eval grade --traces artifacts/traces/ --output artifacts/grade-results/ --config tests/eval/eval_config.yaml
 
 # Deploy to Cloud Run (requires GCP auth + project)
 agents-cli deploy

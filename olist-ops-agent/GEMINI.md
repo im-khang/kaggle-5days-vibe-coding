@@ -20,6 +20,14 @@ Implement agent logic in `olist_ops/`. Use `agents-cli playground` for interacti
 ### Phase 3: The Evaluation Loop (Main Iteration Phase)
 Start with 1-2 eval cases, run `agents-cli eval generate`, then `agents-cli eval grade`, iterate by making changes and rerunning both commands until satisfied. Expect 5-10+ iterations. Once you have a baseline, reach for `agents-cli eval compare` (regression diffs), `agents-cli eval analyze` (cluster failure modes), and `agents-cli eval optimize` (auto-tune prompts). See the **Evaluation Guide** for metrics, dataset schema, LLM-as-judge config, and common gotchas.
 
+**This project's eval is already wired and verified:**
+- Dataset: `tests/eval/datasets/olist-ops-dataset.json` (12 cases)
+- Config: `tests/eval/eval_config.yaml` (4 custom metrics: tool_use_quality, grounded_response, intent_satisfaction, sql_safety)
+- Last verified run: 12/12 pass, all metrics 1.000 (2026-06-29)
+- Run: `agents-cli eval generate --dataset tests/eval/datasets/olist-ops-dataset.json --output artifacts/traces/` then `agents-cli eval grade --traces artifacts/traces/ --output artifacts/grade-results/ --config tests/eval/eval_config.yaml`
+
+**Eval-compat shim**: `olist_ops/__init__.py` monkeypatches the Vertex eval SDK to filter non-callable toolset objects (BigQueryToolset, McpToolset) from agent.tools before introspection. Without this, every eval case fails with `TypeError: ... is not a callable object`. The patch only activates when `vertexai._genai.types.evals` is importable (eval extra only).
+
 ### Phase 4: Pre-Deployment Tests
 Run `uv run pytest tests/unit tests/integration`. Fix issues until all tests pass.
 

@@ -1,0 +1,88 @@
+{
+  "eval_cases": [
+    {
+      "eval_case_id": "worst_state_ontime",
+      "prompt": {
+        "role": "user",
+        "parts": [{ "text": "Which state has the worst on-time delivery?" }]
+      }
+    },
+    {
+      "eval_case_id": "seller_reviews_sp",
+      "prompt": {
+        "role": "user",
+        "parts": [{ "text": "Average review score for sellers in SP?" }]
+      }
+    },
+    {
+      "eval_case_id": "late_delivery_reviews",
+      "prompt": {
+        "role": "user",
+        "parts": [{ "text": "Do late deliveries get worse reviews?" }]
+      }
+    },
+    {
+      "eval_case_id": "payment_mix",
+      "prompt": {
+        "role": "user",
+        "parts": [{ "text": "What payment types are most common?" }]
+      }
+    },
+    {
+      "eval_case_id": "cancel_rate",
+      "prompt": {
+        "role": "user",
+        "parts": [{ "text": "How many orders were canceled or unavailable by state?" }]
+      }
+    },
+    {
+      "eval_case_id": "schema_orders",
+      "prompt": {
+        "role": "user",
+        "parts": [{ "text": "Show me the schema of the orders table." }]
+      }
+    },
+    {
+      "eval_case_id": "list_tables",
+      "prompt": {
+        "role": "user",
+        "parts": [{ "text": "List the tables and views in this dataset." }]
+      }
+    },
+    {
+      "eval_case_id": "out_of_scope_refuse",
+      "prompt": {
+        "role": "user",
+        "parts": [{ "text": "What's the weather in Hanoi today?" }]
+      }
+    },
+    {
+      "eval_case_id": "freight_by_seller_state",
+      "prompt": {
+        "role": "user",
+        "parts": [{ "text": "Average freight value by seller state." }]
+      }
+    },
+    {
+      "eval_case_id": "worst_sellers_ontime",
+      "prompt": {
+        "role": "user",
+        "parts": [{ "text": "Worst 5 sellers by on-time rate, with their order counts." }]
+      }
+    },
+    {
+      "eval_case_id": "avg_days_late",
+      "prompt": {
+        "role": "user",
+        "parts": [{ "text": "Average days late vs estimate overall." }]
+      }
+    },
+    {
+      "eval_case_id": "credit_card_installments",
+      "prompt": {
+        "role": "user",
+        "parts": [{ "text": "Installment distribution for credit card payments." }]
+      }
+    }
+  ]
+}

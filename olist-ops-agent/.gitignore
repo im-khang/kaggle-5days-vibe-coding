@@ -12,6 +12,10 @@ __pycache__/
 # ADK runtime
 .adk/
 
+# agents-cli eval artifacts (traces + grade results, regenerable)
+artifacts/
+.agents-cli-scripts/
+
 # Data — 120MB raw CSVs, download via script/README
 data/*.csv
 data/*.csv.gz

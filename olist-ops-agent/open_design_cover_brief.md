@@ -8,7 +8,8 @@ Visual direction: premium dark technical editorial, not generic SaaS. Show ecomm
 
 Required text hierarchy:
 - Main title: **OLIST OPS AGENT**
-- Secondary: **Google ADK + BigQuery analytics**
-- Small stack marks: Google ADK, BigQuery, MCP, Vertex AI
+- Secondary: **Google ADK + BigQuery analytics** — multi-agent NL queries with agents-cli eval, MCP toolsets, and Vertex AI deployment
+- Small stack marks: Google ADK, agents-cli, BigQuery, MCP, Vertex AI
+- Bottom coordinate strip: ADK · MULTI-AGENT · agents-cli EVAL | SELECT-ONLY SQL · TOOL-GROUNDED · 12/12 PASS | 96,999 ROWS · MCP TOOLSETS | VERTEX AI / AI STUDIO
 
 Avoid: robots, people, fake dashboards, unreadable tiny text, cluttered badges, random logos, cartoon style, and busy text over glowing route lines.

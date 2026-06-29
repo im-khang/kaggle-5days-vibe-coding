@@ -2,21 +2,53 @@
 
 This directory contains evaluation datasets for testing agent behavior.
 
-## Running Evaluations
+## Project Eval Dataset
 
-### Default Dataset
+`olist-ops-dataset.json` — 12 cases covering the Olist agent's core domains:
+
+| Case ID | Domain | Tests |
+|---------|--------|-------|
+| worst_state_ontime | Fulfillment | On-time delivery by state |
+| seller_reviews_sp | Seller Ops | Seller reviews by state |
+| late_delivery_reviews | CX | Delay vs review correlation |
+| payment_mix | Payments | Payment type distribution |
+| cancel_rate | CX | Cancellation/unavailable by state |
+| schema_orders | Data Analyst | Schema lookup |
+| list_tables | Data Analyst | Table listing |
+| out_of_scope_refuse | Routing | Out-of-scope refusal |
+| freight_by_seller_state | Seller Ops | Freight by seller state |
+| worst_sellers_ontime | Seller Ops | Worst sellers with order count |
+| avg_days_late | Fulfillment | Days late vs estimate |
+| credit_card_installments | Payments | Installment distribution |
+
+## Running the Project Eval
+
 ```bash
-# Generate traces using the default dataset
-agents-cli eval generate
-agents-cli eval grade
+# Generate traces (requires ADC + GOOGLE_CLOUD_PROJECT)
+agents-cli eval generate \
+  --dataset tests/eval/datasets/olist-ops-dataset.json \
+  --output artifacts/traces/
+
+# Grade with 4 custom metrics
+agents-cli eval grade \
+  --traces artifacts/traces/ \
+  --output artifacts/grade-results/ \
+  --config tests/eval/eval_config.yaml
 ```
 
-### Custom Dataset
-```bash
-# Generate traces for a custom dataset
-agents-cli eval generate --dataset tests/eval/datasets/custom-dataset.json --output custom_traces/
-agents-cli eval grade --metrics general_quality --traces custom_traces/
+## Verified Results (2026-06-29)
+
 ```
+12/12 cases — all 4 metrics pass (1.0000 mean score, 0 errors)
+
+Metric              | Mean | Stdev
+tool_use_quality    | 1.00 | 0.00
+grounded_response   | 1.00 | 0.00
+intent_satisfaction | 1.00 | 0.00
+sql_safety          | 1.00 | 0.00
+```
+
+Artifacts: `artifacts/traces/traces_20260629_081004.json`, `artifacts/grade-results/results_20260629_081540.json`
 
 ## Dataset Format
 
