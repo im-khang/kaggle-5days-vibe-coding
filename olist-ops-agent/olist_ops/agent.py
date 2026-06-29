@@ -95,3 +95,7 @@ root_agent = Agent(
         executive_briefing_pipeline,
     ],
 )
+
+from google.adk.apps import App
+
+app = App(root_agent=root_agent, name="olist_ops")

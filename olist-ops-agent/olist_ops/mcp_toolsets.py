@@ -6,10 +6,12 @@ servers that already expose web fetch, DuckDuckGo search, sequential reasoning,
 and memory tools.
 
 We also wire Google's first-party `BigQueryToolset` (from
-`google.adk.integrations.bigquery`) — read-only via `WriteMode.BLOCKED` — so any
+`google.adk.integrations.bigquery`) — write-protected via `WriteMode.PROTECTED` — so any
 agent that needs richer BigQuery primitives (forecast, anomaly detection,
 contribution analysis, ask-data-insights, catalog search) gets them directly
-from Google instead of through our small custom tool wrapper.
+from Google instead of through our small custom tool wrapper. PROTECTED mode
+allows temporary session artifacts (needed by forecast/detect_anomalies which
+internally run CREATE MODEL) but still blocks permanent writes to user tables.
 """
 
 from __future__ import annotations
@@ -35,6 +37,68 @@ from google.adk.integrations.bigquery.config import (
     BigQueryToolConfig,
     WriteMode,
 )
+
+from google.adk.tools.google_tool import GoogleTool
+
+from olist_ops.tools import PROJECT, DATASET, LOCATION
+
+
+class _ProjectInjectedBigQueryToolset(BigQueryToolset):
+    """BigQueryToolset that auto-injects project_id into ML tool calls.
+
+    Google's ``forecast``, ``detect_anomalies``, and ``analyze_contribution``
+    take ``project_id`` as a required parameter that the LLM must fill. Even
+    with instruction context, models sometimes pass an empty string, causing
+    "ProjectId must be non-empty" errors.
+
+    This subclass overrides ``get_tools`` to replace the three ML tools with
+    ``_ProjectInjectedGoogleTool`` instances that pre-fill ``project_id`` from
+    the ``GOOGLE_CLOUD_PROJECT`` env var and hide the parameter from the LLM's
+    schema entirely.
+    """
+
+    async def get_tools(self, readonly_context=None):
+        tools = await super().get_tools(readonly_context)
+        if not PROJECT:
+            return tools
+
+        _ML_TOOL_NAMES = {"forecast", "detect_anomalies", "analyze_contribution"}
+        patched = []
+        for tool in tools:
+            if tool.name in _ML_TOOL_NAMES:
+                patched.append(
+                    _ProjectInjectedGoogleTool(
+                        func=tool.func,
+                        project_id=PROJECT,
+                        credentials_config=tool._credentials_manager.credentials_config
+                        if tool._credentials_manager
+                        else None,
+                        tool_settings=tool._tool_settings,
+                    )
+                )
+            else:
+                patched.append(tool)
+        return patched
+
+
+class _ProjectInjectedGoogleTool(GoogleTool):
+    """GoogleTool that pre-fills project_id and hides it from the LLM schema."""
+
+    def __init__(self, *, project_id: str, **kwargs):
+        super().__init__(**kwargs)
+        self._project_id = project_id
+        self._ignore_params.append("project_id")
+
+    async def _run_async_with_credential(
+        self, credentials, tool_settings, args, tool_context
+    ):
+        # Force-override project_id regardless of what the LLM passed.
+        # This fixes "ProjectId must be non-empty" even if the model
+        # hallucinates an empty project_id despite it being hidden from schema.
+        args["project_id"] = self._project_id
+        return await super()._run_async_with_credential(
+            credentials, tool_settings, args, tool_context
+        )
 
 
 def _safe_env() -> dict[str, str]:
@@ -123,7 +187,7 @@ def google_bigquery_toolset(
     *,
     tool_filter: list[str] | None = None,
 ) -> BigQueryToolset:
-    """Return Google's official `BigQueryToolset` with writes blocked.
+    """Return Google's official `BigQueryToolset` with writes protected.
 
     Use this whenever an agent needs first-party BigQuery primitives beyond our
     small custom wrappers. Tools exposed (subset configurable via tool_filter):
@@ -131,7 +195,7 @@ def google_bigquery_toolset(
         - list_dataset_ids / list_table_ids
         - get_dataset_info / get_table_info
         - get_job_info
-        - execute_sql                (read-only — WriteMode.BLOCKED)
+        - execute_sql                (write-protected — WriteMode.PROTECTED)
         - forecast                   (TimesFM forecasting)
         - analyze_contribution
         - detect_anomalies
@@ -143,7 +207,11 @@ def google_bigquery_toolset(
     not set (the underlying toolset constructor accepts no credentials and
     inherits ADC at call time).
     """
-    config = BigQueryToolConfig(write_mode=WriteMode.BLOCKED)
+    config = BigQueryToolConfig(
+        write_mode=WriteMode.PROTECTED,
+        compute_project_id=PROJECT or None,
+        location=LOCATION or None,
+    )
     creds_config = None
     try:
         import google.auth  # type: ignore
@@ -153,7 +221,7 @@ def google_bigquery_toolset(
     except Exception:  # pragma: no cover - ADC may be missing at import time
         creds_config = None
 
-    return BigQueryToolset(
+    return _ProjectInjectedBigQueryToolset(
         tool_filter=tool_filter,
         credentials_config=creds_config,
         bigquery_tool_config=config,

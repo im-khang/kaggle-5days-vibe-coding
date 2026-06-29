@@ -59,7 +59,8 @@ servers from the open-source and Google ecosystems.
 
 `olist_ops/mcp_toolsets.py::google_bigquery_toolset()` returns Google's official
 `BigQueryToolset` (`google.adk.integrations.bigquery`) configured with
-`WriteMode.BLOCKED` (read-only). It exposes `execute_sql`, `forecast` (TimesFM),
+`WriteMode.PROTECTED` (temporary session writes only, no permanent table
+mutations). It exposes `execute_sql`, `forecast` (TimesFM),
 `analyze_contribution`, `detect_anomalies`, `ask_data_insights`, and
 `search_catalog`. Each agent receives only the subset it needs via `tool_filter`.
 

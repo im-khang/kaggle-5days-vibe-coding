@@ -5,7 +5,7 @@ from google.adk.agents import Agent
 from google.adk.tools import FunctionTool
 
 from olist_ops.chart_tool import create_chart
-from olist_ops.sub_agents.common import MODEL, SHARED_TAIL
+from olist_ops.sub_agents.common import MODEL, SHARED_TAIL, _BQ_CONTEXT
 from olist_ops.mcp_toolsets import (
     duck_search_toolset,
     fetch_toolset,
@@ -47,6 +47,7 @@ orders_agent = Agent(
         " month', 'forecast on-time rate'), you MAY use Google's first-party"
         " bigquery forecast tool (TimesFM) on the orders_enriched view. Always"
         " label forecasts as model estimates, not actuals."
+        + _BQ_CONTEXT
         + SHARED_TAIL
     ),
     tools=[
@@ -71,6 +72,7 @@ lane_agent = Agent(
         " For lane outliers or drivers of lateness, use Google's first-party"
         " bigquery detect_anomalies or analyze_contribution tools against"
         " carrier_kpis."
+        + _BQ_CONTEXT
         + SHARED_TAIL
     ),
     tools=[
@@ -98,6 +100,7 @@ geo_routing_agent = Agent(
         " from it."
         " For contribution questions ('which origin state drives freight cost'),"
         " use Google's first-party bigquery analyze_contribution tool."
+        + _BQ_CONTEXT
         + SHARED_TAIL
     ),
     tools=[
@@ -153,6 +156,7 @@ seller_risk_agent = Agent(
         " detect_anomalies tool on seller_kpis, and analyze_contribution to"
         " decompose total late orders by seller_state. Cite the tool used."
         " Output: risk level, evidence, suggested action."
+        + _BQ_CONTEXT
         + SHARED_TAIL
     ),
     tools=[
@@ -240,8 +244,8 @@ payments_agent = Agent(
 
 DATA_ANALYST_INSTRUCTION = f"""\
 You are the ad-hoc analytics engineer for the Olist marketplace supply-chain
-team. Data lives in BigQuery dataset `{DATASET}`. Do not reveal the GCP project
-ID in final answers.
+team. Data lives in BigQuery dataset `{DATASET}`. Use the project_id from the
+BigQuery context below for tool calls, but do not show it in final answers.
 
 Tables and views:
 - Raw tables: customers, geolocation, order_items, order_payments,
@@ -277,7 +281,7 @@ External tools (use sparingly, only when they add value):
 - mem_* tools: persist and recall small facts across turns in a session (e.g.
   a derived metric the user named). Do not store secrets or raw PII.
 
-Google first-party BigQuery tools (read-only, WriteMode.BLOCKED):
+Google first-party BigQuery tools (write-protected, WriteMode.PROTECTED):
 - search_catalog: discover relevant tables/views by natural-language query.
 - ask_data_insights: ask a natural-language question about a table and get a
   Google-generated insight. Good for exploratory questions that our custom
@@ -290,7 +294,7 @@ Google first-party BigQuery tools (read-only, WriteMode.BLOCKED):
   BigQuery tools for anomaly detection, time-series forecasting, and
   contribution analysis. Use when the user asks for predictive or diagnostic
   analytics beyond descriptive KPIs.
-"""
+""" + _BQ_CONTEXT
 
 data_analyst_agent = Agent(
     name="DataAnalystAgent",

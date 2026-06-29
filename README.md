@@ -49,12 +49,44 @@ ChiefSupplyChainOfficer (CSCO)  ← sub_agents transfer: routes to ONE agent
 | Layer | Choice |
 |---|---|
 | Framework | Google ADK 2.3 |
+| Tooling | [agents-cli](https://github.com/google/agents-cli) 0.6.1 (scaffold, eval, deploy) |
 | Model | Gemini 2.5 Flash (Vertex AI or Google AI Studio) |
 | Data | BigQuery dataset `olist_ecommerce` |
 | Auth | Application Default Credentials or `GOOGLE_API_KEY` |
 | Pattern | `sub_agents` transfer (canonical ADK multi-agent tree) |
 | Workflow | SequentialAgent + ParallelAgent for executive briefing |
-| Eval | ADK eval, 17 cases, 4 custom metrics |
+| Deploy | Cloud Run (Dockerfile + Terraform + GitHub Actions CI/CD) |
+| Protocol | A2A (Agent2Agent) via `a2a-sdk` |
+| Eval | ADK eval (17 cases, 4 custom metrics) + agents-cli eval flywheel |
+
+## agents-cli Integration
+
+This project uses [google/agents-cli](https://github.com/google/agents-cli) — Google's official CLI for building, evaluating, and deploying ADK agents on Google Cloud. `agents-cli scaffold enhance` added deployment infrastructure without touching agent logic:
+
+- **Dockerfile** — containerized ADK + A2A app for Cloud Run
+- **GitHub Actions CI/CD** — `pr_checks.yaml`, `staging.yaml`, `deploy-to-prod.yaml`
+- **Terraform** — single-project infra + CICD workload identity federation
+- **A2A protocol** — `fast_api_app.py` serves ADK web + A2A JSON-RPC from one container
+- **Eval flywheel** — `agents-cli eval generate` / `grade` / `analyze` / `optimize`
+
+```bash
+# Install agents-cli
+uv tool install google-agents-cli
+
+# Run the agent playground (alternative to adk web)
+cd olist-ops-agent
+agents-cli playground
+
+# Run single prompt
+agents-cli run "Which state has the worst on-time delivery?"
+
+# Eval: generate traces, then grade
+agents-cli eval generate
+agents-cli eval grade
+
+# Deploy to Cloud Run (requires GCP auth + project)
+agents-cli deploy
+```
 
 ## Quick Start
 
@@ -124,13 +156,23 @@ uv run adk eval olist_ops tests/eval/datasets/olist_cases.json \
 ```
 olist-ops-agent/           # The agent application
   olist_ops/
-    agent.py               # ChiefSupplyChainOfficer (root) + sub_agents transfer tree
+    agent.py               # ChiefSupplyChainOfficer (root) + app = App(...) for agents-cli
     sub_agents/            # 3 multi-specialist departments + 2 direct specialists + Executive Briefing Pipeline
     tools.py               # BigQuery tools (SELECT-only, safety caps)
+    fast_api_app.py        # FastAPI app (ADK web + A2A) — agents-cli deployment entrypoint
+    app_utils/             # A2A routes, telemetry, services
     olist_metrics.py       # Custom eval metrics
   scripts/
     bigquery_upload.py     # Load CSVs → BigQuery + create views
-  tests/eval/             # Eval cases + config
+  tests/eval/             # ADK eval cases + agents-cli eval config
+  tests/unit/             # Unit tests
+  tests/integration/      # Integration + server E2E tests
+  tests/load_test/        # Load testing
+  Dockerfile              # Cloud Run container
+  .github/workflows/      # CI/CD: pr_checks, staging, deploy-to-prod
+  deployment/terraform/   # Single-project + CICD infrastructure
+  agents-cli-manifest.yaml # agents-cli project metadata
+  GEMINI.md               # Coding agent guide (agents-cli skills)
   .env.example            # Environment template
   pyproject.toml
   README.md               # Detailed app docs
@@ -150,9 +192,14 @@ AGENTS.md                 # Agent coding conventions
 ## Tech Stack
 
 - [Google ADK 2.3](https://google.github.io/adk-docs/) — multi-agent framework
+- [agents-cli 0.6.1](https://github.com/google/agents-cli) — scaffold, eval, deploy toolchain
+- [A2A SDK](https://github.com/a2aproject/A2A) — Agent2Agent protocol
 - [Gemini 2.5 Flash](https://ai.google.dev/gemini-api/docs/models) — LLM for routing + specialists
 - [BigQuery](https://cloud.google.com/bigquery) — data warehouse
 - [Vertex AI](https://cloud.google.com/vertex-ai) or Google AI Studio API key — public model access
+- [Cloud Run](https://cloud.google.com/run) — scale-to-zero deployment
+- [Terraform](https://www.terraform.io/) — infrastructure as code
+- [GitHub Actions](https://github.com/features/actions) — CI/CD
 - Python 3.11+, uv
 
 ## License
@@ -162,4 +209,5 @@ MIT
 ## Acknowledgments
 
 - Olist Brazilian E-Commerce Dataset (via [HuggingFace mirror](https://huggingface.co/datasets/miminmoons/olist-ecommerce-for-delivery-and-review-prediction))
+- [google/agents-cli](https://github.com/google/agents-cli) — CLI + skills for ADK agent lifecycle
 - Google × Kaggle — 5-Day AI Agents Intensive Vibe Coding Course

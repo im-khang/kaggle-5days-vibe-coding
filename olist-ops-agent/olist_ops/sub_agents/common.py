@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import os
 
+from olist_ops.tools import PROJECT, DATASET
+
 
 def _build_model():
     """Return ADK model config.
@@ -50,6 +52,20 @@ SHARED_TAIL = (
     " NOT invent numbers, IDs, or rows. Refuse questions outside Olist"
     " ecommerce operations analytics. Reply in English."
 )
+
+# Injected into agents that use google_bigquery_toolset so they never ask the
+# user for project_id / table names. Evaluated at import time from env vars.
+_BQ_CONTEXT = (
+    f" BigQuery project_id is '{PROJECT}'. Dataset is '{DATASET}'."
+    " For forecast, use history_data as a SQL query like"
+    " \"SELECT DATE(purchased_at) AS ts, AVG(delivery_days) AS val"
+    f" FROM `{PROJECT}.{DATASET}.orders_enriched`"
+    " WHERE customer_state='SP' AND order_status='delivered'"
+    " GROUP BY ts ORDER BY ts\" and pass project_id, timestamp_col='ts',"
+    " data_col='val'. For detect_anomalies/analyze_contribution, use"
+    f" `{PROJECT}.{DATASET}.carrier_kpis` or relevant views."
+    " Never ask the user for the project_id — it is provided here."
+) if PROJECT else ""
 
 DEPARTMENT_TRANSFER_RULES = """
 
